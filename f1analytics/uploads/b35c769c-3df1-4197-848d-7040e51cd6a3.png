@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="560"
+   height="390"
+   viewBox="0 0 148.16667 103.1875"
+   version="1.1"
+   inkscape:version="0.92.1 r15371"
+   sodipodi:docname="Pierre Gasly signature.svg">
+  <defs />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.7"
+     inkscape:cx="-440.27026"
+     inkscape:cy="140.1212"
+     inkscape:document-units="px"
+     showgrid="false"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     units="px"
+     inkscape:window-width="1440"
+     inkscape:window-height="836"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:snap-global="false" />
+  <path
+     sodipodi:nodetypes="ccc"
+     inkscape:connector-curvature="0"
+     id="G"
+     d="M 108.33827,1.9700195 C 71.820522,38.89908 31.401736,56.29014 1.587025,91.38117 51.24903,62.13689 107.97858,38.74225 146.55781,25.22247"
+     style="fill:none;stroke:#000000;stroke-width:2.64583325;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+  <path
+     sodipodi:nodetypes="ccc"
+     inkscape:connector-curvature="0"
+     id="A"
+     d="m 62.829475,63.446909 c 1.908165,-8.18206 10.14545,-17.49772 12.959768,-25.75206 1.082881,2.10447 0.210807,6.59907 -2.068559,11.21905"
+     style="fill:none;stroke:#000000;stroke-width:2.64583325;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+  <path
+     sodipodi:nodetypes="cc"
+     inkscape:connector-curvature="0"
+     id="S"
+     d="m 80.751633,46.754619 c 11.374415,-5.82929 -8.169624,-10.26248 5.078121,-11.09168"
+     style="fill:none;stroke:#000000;stroke-width:2.64583325;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+  <path
+     sodipodi:nodetypes="cc"
+     inkscape:connector-curvature="0"
+     id="L"
+     d="m 90.60166,42.825379 c -0.652714,-2.75568 0.108729,-4.36109 1.870886,-6.41446"
+     style="fill:none;stroke:#000000;stroke-width:2.64583325;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+  <path
+     sodipodi:nodetypes="ccc"
+     inkscape:connector-curvature="0"
+     id="Y"
+     d="m 99.357625,35.963059 c 7.959845,-3.96401 16.586105,-9.59403 23.650545,-11.31951 -13.44638,15.45555 -65.693587,63.99539 -77.846185,76.149341"
+     style="fill:none;stroke:#000000;stroke-width:2.64583325;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+  <ellipse
+     transform="rotate(-45)"
+     ry="2.4722433"
+     rx="5.6126604"
+     cy="123.92377"
+     cx="47.862553"
+     id="Pcircle"
+     style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:2.64583325;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+  <path
+     inkscape:connector-curvature="0"
+     id="Pstem"
+     d="m 110.24597,64.006489 3.20723,-11.62622"
+     style="fill:none;stroke:#000000;stroke-width:2.64583325;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+</svg>
