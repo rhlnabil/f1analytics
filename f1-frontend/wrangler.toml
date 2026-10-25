@@ -1,0 +1,5 @@
+name = "f1analytics-2uu"
+pages_build_output_dir = "dist"
+
+[vars]
+VITE_API_URL = "https://f1analytics.hostless.app"
