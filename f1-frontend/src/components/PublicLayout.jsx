@@ -86,7 +86,7 @@ export default function PublicLayout({ children }) {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
 
       {/* Top status bar */}
-      <div style={{
+      <div className="top-status-bar" style={{
         position: 'fixed', top: 0, left: 0, right: 0, height: 40, zIndex: 500,
         background: 'linear-gradient(90deg, #0a0a0f 0%, #15151c 50%, #0a0a0f 100%)',
         borderBottom: '1px solid rgba(225,6,0,0.25)',
@@ -101,7 +101,7 @@ export default function PublicLayout({ children }) {
           animation: 'scanAcross 8s linear infinite', pointerEvents: 'none',
         }} />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20, position: 'relative', zIndex: 1, flexWrap: 'wrap' }}>
+        <div className="top-bar-left" style={{ display: 'flex', alignItems: 'center', gap: 20, position: 'relative', zIndex: 1, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{
               width: 6, height: 6, borderRadius: '50%',
@@ -110,15 +110,15 @@ export default function PublicLayout({ children }) {
             }} />
             <span style={{ color: '#fff' }}>{t('statusBar.sessionLive')}</span>
           </div>
-          <span style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.15)' }} />
-          <span>{t('statusBar.fp1Season')}</span>
-          <span style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.15)' }} />
-          <span style={{ color: '#e10600', animation: 'blink 1.2s infinite step-end' }}>● {t('statusBar.rec')}</span>
+          <span className="hide-mobile" style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.15)' }} />
+          <span className="hide-mobile">{t('statusBar.fp1Season')}</span>
+          <span className="hide-mobile" style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.15)' }} />
+          <span className="hide-mobile" style={{ color: '#e10600', animation: 'blink 1.2s infinite step-end' }}>● {t('statusBar.rec')}</span>
 
-          <span style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.15)' }} />
+          <span className="hide-mobile" style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.15)' }} />
           <NextRaceCountdown variant="compact" accentColor="#e10600" />
 
-          <div style={{
+          <div className="hide-mobile" style={{
             display: 'flex', gap: 4, padding: '4px 8px',
             background: 'rgba(0,0,0,0.6)',
             border: '1px solid rgba(255,255,255,0.08)',
@@ -139,7 +139,7 @@ export default function PublicLayout({ children }) {
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative', zIndex: 1 }}>
+        <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative', zIndex: 1 }}>
           <WeatherWidget />
           <LanguageSwitcher />
         </div>
@@ -179,7 +179,7 @@ export default function PublicLayout({ children }) {
         }} />
 
         <div className="container" style={{ maxWidth: 1400, position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 60, marginBottom: 60 }}>
+          <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 60, marginBottom: 60 }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
                 <div style={{
@@ -295,11 +295,11 @@ export default function PublicLayout({ children }) {
             </div>
           </div>
 
-          <div style={{
+          <div className="footer-bottom" style={{
             display: 'flex', justifyContent: 'space-between',
             alignItems: 'center', flexWrap: 'wrap', gap: 16,
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
               <span style={{ fontFamily: 'var(--font-display)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--text-dim)' }}>© 2026</span>
               <span style={{ fontFamily: 'var(--font-display)', fontSize: 11, letterSpacing: '0.15em', color: '#fff', fontWeight: 700 }}>F1 APEX</span>
               <span style={{ fontFamily: 'var(--font-heading)', fontSize: 11, letterSpacing: '0.1em', color: 'var(--text-dim)' }}>{t('footer.rights')}</span>
@@ -311,7 +311,6 @@ export default function PublicLayout({ children }) {
         </div>
       </footer>
 
-      {/* ✅ CHATBOT GLOBAL — monté partout sur les pages publiques */}
       <ChatBot />
 
       <style>{`
@@ -319,8 +318,57 @@ export default function PublicLayout({ children }) {
         @keyframes blink { 0%,49%{opacity:1} 50%,100%{opacity:.25} }
         @keyframes scanAcross { 0%{transform:translateX(-100%)} 100%{transform:translateX(100vw)} }
         @keyframes borderSlide { 0%{background-position:0% 0%} 100%{background-position:200% 0%} }
-        @media (max-width: 1024px) { footer > div > div { grid-template-columns: 1fr 1fr !important; gap: 40px !important; } }
-        @media (max-width: 640px) { footer > div > div { grid-template-columns: 1fr !important; } }
+
+        /* ✅ RESPONSIVE — Tablette */
+        @media (max-width: 1024px) {
+          .footer-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 40px !important;
+          }
+        }
+
+        /* ✅ RESPONSIVE — Mobile */
+        @media (max-width: 900px) {
+          .hide-mobile {
+            display: none !important;
+          }
+
+          .top-status-bar {
+            padding: 0 10px !important;
+            font-size: 8px !important;
+            letter-spacing: 0.1em !important;
+          }
+
+          .top-bar-left,
+          .top-bar-right {
+            gap: 8px !important;
+          }
+
+          .footer-grid {
+            grid-template-columns: 1fr !important;
+            gap: 32px !important;
+          }
+
+          footer {
+            padding: 40px 16px 20px !important;
+            margin-top: 60px !important;
+          }
+
+          .footer-bottom {
+            flex-direction: column !important;
+            text-align: center !important;
+            gap: 12px !important;
+          }
+        }
+
+        @media (max-width: 600px) {
+          .top-status-bar {
+            height: 36px !important;
+          }
+          .top-bar-right {
+            display: none !important;
+          }
+        }
       `}</style>
     </div>
   );

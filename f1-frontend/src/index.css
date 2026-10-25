@@ -156,7 +156,7 @@ label {
 .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 
 @media (max-width: 900px) {
-  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr !important; gap: 16px !important; }
   .container { padding: 0 16px; }
 }
 
@@ -410,15 +410,6 @@ html[dir="rtl"] [class*="weather-widget"] {
   direction: ltr;
 }
 
-/* ============ RESPONSIVE ============ */
-@media (max-width: 900px) {
-  .container { padding: 0 16px; }
-  h1 { font-size: 32px; }
-}
-
-@media (max-width: 600px) {
-  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; gap: 12px; }
-}
 /* ============================================================ */
 /* ============ AURORA — F1 APEX ============================== */
 /* ============================================================ */
@@ -429,7 +420,6 @@ html[dir="rtl"] [class*="weather-widget"] {
   position: relative;
 }
 
-/* Optionnel : variante fullscreen en fond */
 .aurora-fullscreen {
   position: fixed;
   inset: 0;
@@ -441,7 +431,6 @@ html[dir="rtl"] [class*="weather-widget"] {
   mix-blend-mode: screen;
 }
 
-/* Optionnel : variante en hero section */
 .aurora-hero {
   position: absolute;
   inset: 0;
@@ -451,13 +440,7 @@ html[dir="rtl"] [class*="weather-widget"] {
   z-index: 1;
   opacity: 0.65;
 }
-.aurora-container {
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
 
-/* Le fond racine doit être au-dessus du body mais sous tout le contenu */
 body {
   background: var(--f1-black);
 }
@@ -465,4 +448,198 @@ body {
 #root {
   position: relative;
   isolation: isolate;
+}
+
+/* ============================================================ */
+/* ============ FIX GLOBAL — pas de débordement ============== */
+/* ============================================================ */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+img, video, iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ============================================================ */
+/* ============ ✅ RESPONSIVE — TABLETTE (≤ 1024px) ========== */
+/* ============================================================ */
+@media (max-width: 1024px) {
+  .container { padding: 0 24px; }
+  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ============================================================ */
+/* ============ ✅ RESPONSIVE — MOBILE (≤ 900px) ============= */
+/* ============================================================ */
+@media (max-width: 900px) {
+  .container { padding: 0 16px; }
+
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  h1 { font-size: clamp(28px, 8vw, 48px); }
+  h2 { font-size: clamp(22px, 6vw, 32px); }
+  h3 { font-size: clamp(16px, 4vw, 22px); }
+
+  /* Table → scroll horizontal */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  th, td {
+    padding: 12px;
+    font-size: 13px;
+  }
+
+  /* ✅ Force TOUTES les grilles inline à passer à 1 colonne */
+  [style*="grid-template-columns: repeat(2"],
+  [style*="grid-template-columns: repeat(3"],
+  [style*="grid-template-columns: repeat(4"],
+  [style*="grid-template-columns: repeat(auto-fill"],
+  [style*="grid-template-columns: repeat(auto-fit"],
+  [style*="grid-template-columns: 'auto 1fr'"],
+  [style*="grid-template-columns: minmax(0, 1"],
+  [style*="grid-template-columns: 1fr 1fr"],
+  [style*="gridTemplateColumns: repeat(2"],
+  [style*="gridTemplateColumns: repeat(3"],
+  [style*="gridTemplateColumns: repeat(4"],
+  [style*="gridTemplateColumns: repeat(auto-fill"],
+  [style*="gridTemplateColumns: repeat(auto-fit"],
+  [style*="gridTemplateColumns: 'auto 1fr'"],
+  [style*="gridTemplateColumns: '2fr 1fr 1fr 1fr'"],
+  [style*="gridTemplateColumns: minmax(0, 1"],
+  [style*="gridTemplateColumns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gridTemplateColumns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  /* Sections avec padding fixe */
+  section[style*="padding: 80px"],
+  section[style*="padding: 100px"],
+  section[style*="padding: 120px"],
+  section[style*="padding: 60px 32px"],
+  section[style*="padding: 40px 32px"] {
+    padding: 40px 16px !important;
+  }
+
+  /* Headers inline trop grands */
+  [style*="font-size: 96px"],
+  [style*="font-size: 110px"] {
+    font-size: 42px !important;
+  }
+
+  [style*="font-size: 72px"] {
+    font-size: 36px !important;
+  }
+
+  [style*="font-size: 64px"] {
+    font-size: 32px !important;
+  }
+
+  /* Padding inline excessif */
+  [style*="padding: 32px"],
+  [style*="padding: 40px"],
+  [style*="padding: 48px"],
+  [style*="padding: 60px"] {
+    padding: 20px !important;
+  }
+
+  /* Gaps inline excessifs */
+  [style*="gap: 60px"],
+  [style*="gap: 70px"],
+  [style*="gap: 80px"] {
+    gap: 24px !important;
+  }
+
+  /* Photos pilotes trop grandes */
+  img[style*="width: 420px"],
+  img[style*="width: 240px"] {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Hero plein écran */
+  section[style*="min-height: 100vh"] {
+    min-height: auto !important;
+    padding-top: 100px !important;
+    padding-bottom: 40px !important;
+  }
+}
+
+/* ============================================================ */
+/* ============ ✅ RESPONSIVE — PETIT MOBILE (≤ 600px) ====== */
+/* ============================================================ */
+@media (max-width: 600px) {
+  .container { padding: 0 12px; }
+
+  h1 { font-size: clamp(24px, 9vw, 40px); }
+  h2 { font-size: clamp(20px, 7vw, 28px); }
+
+  button, .btn {
+    padding: 12px 16px;
+    font-size: 12px;
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Exceptions : boutons ronds / icônes */
+  button[style*="border-radius: 50%"],
+  button[style*="borderRadius: '50%'"],
+  button[style*="width: 32"],
+  button[style*="width: 36"],
+  button[style*="width: 40"],
+  button[style*="width: 44"],
+  button[style*="width: 46"],
+  button[style*="width: 48"] {
+    width: auto !important;
+  }
+
+  .card {
+    padding: 16px;
+    border-radius: 6px;
+  }
+
+  th, td {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+
+  /* Cacher colonnes moins importantes */
+  table th:nth-child(n+6),
+  table td:nth-child(n+6) {
+    display: none;
+  }
+}
+
+/* ============================================================ */
+/* ============ ✅ RESPONSIVE — TRÈS PETIT (≤ 380px) ========= */
+/* ============================================================ */
+@media (max-width: 380px) {
+  .container { padding: 0 8px; }
+
+  h1 { font-size: 22px; }
+  h2 { font-size: 18px; }
+  h3 { font-size: 15px; }
+
+  button, .btn {
+    font-size: 11px;
+    padding: 10px 14px;
+  }
+
+  th, td {
+    padding: 8px 6px;
+    font-size: 11px;
+  }
 }

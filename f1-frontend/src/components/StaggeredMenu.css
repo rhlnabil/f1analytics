@@ -371,18 +371,95 @@
 
 .sm-line { display: none !important; }
 
+/* ============================================================ */
+/* ============ ✅ RESPONSIVE — TABLETTE (≤ 1024px) ========== */
+/* ============================================================ */
 @media (max-width: 1024px) {
   .staggered-menu-panel,
-  .sm-prelayers { width: 100%; left: 0; right: 0; }
+  .sm-prelayers {
+    width: 100%;
+    left: 0;
+    right: 0;
+  }
 }
 
-@media (max-width: 640px) {
-  .staggered-menu-header { padding: 0.9em 1em; }
-  .sm-logo-img { height: 36px; }
-  .sm-toggle.pit-button { padding: 8px 16px 7px; }
-  .pit-caption { display: none; }
-  .pit-leds { gap: 4px; }
-  .pit-led { width: 5px; height: 5px; }
-  .sm-panel-item { font-size: 1.6rem; }
-  .staggered-menu-panel { padding: 5em 1.5em 1.5em 1.5em; }
+/* ============================================================ */
+/* ============ ✅ RESPONSIVE — MOBILE (≤ 900px) ============= */
+/* ============================================================ */
+@media (max-width: 900px) {
+  .staggered-menu-header {
+    padding: 0.9em 1em;
+  }
+  .staggered-menu-panel {
+    padding: 5em 1.5em 1.5em 1.5em;
+  }
+  .sm-logo-img {
+    height: 36px;
+  }
+  .sm-toggle.pit-button {
+    padding: 8px 16px 7px;
+  }
+  .sm-panel-item {
+    font-size: clamp(1.5rem, 6vw, 2rem);
+  }
+}
+
+/* ============================================================ */
+/* ============ ✅ RESPONSIVE — PETIT MOBILE (≤ 600px) ====== */
+/* ============================================================ */
+@media (max-width: 600px) {
+  .staggered-menu-header {
+    padding: 0.7em 0.8em;
+  }
+  .sm-logo-img {
+    height: 32px;
+  }
+  .sm-toggle.pit-button {
+    padding: 6px 12px 5px;
+    transform: rotate(0deg);
+    gap: 2px;
+  }
+  .pit-caption {
+    display: none;
+  }
+  .pit-leds {
+    gap: 3px;
+    padding: 2px 0 1px;
+  }
+  .pit-led {
+    width: 4px;
+    height: 4px;
+  }
+  .pit-main {
+    gap: 5px;
+  }
+  .sm-toggle-line {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+  }
+  .sm-icon {
+    width: 10px;
+    height: 10px;
+    flex: 0 0 10px;
+  }
+  .sm-panel-item {
+    font-size: 1.3rem;
+    padding: 0.2em 2em 0.2em 0;
+  }
+  .sm-panel-list {
+    gap: 0.15rem;
+  }
+  .sm-panel-item::after {
+    font-size: 11px;
+    right: 0.2em;
+  }
+  .sm-socials {
+    padding-top: 1.5rem;
+  }
+  .sm-socials-title {
+    font-size: 0.6rem;
+  }
+  .sm-socials-link {
+    font-size: 0.85rem;
+  }
 }
