@@ -66,36 +66,25 @@ public class F1SiteScraperService {
         t.start();
     }
 
-    @PostConstruct
-    public void init() {
-        if (!initStarted.compareAndSet(false, true)) {
-            return;
-        }
+   @PostConstruct
+public void init() {
+    try {
+        System.out.println("=== PLAYWRIGHT: début ===");
 
-        log.info("🚀 Init Playwright (thread: {})", Thread.currentThread().getName());
+        playwright = Playwright.create();
+        System.out.println("=== PLAYWRIGHT: créé ===");
 
-        try {
-            playwright = Playwright.create();
-            log.info("✅ Playwright créé");
+        browser = playwright.chromium().launch(
+            new BrowserType.LaunchOptions()
+                .setHeadless(true)
+        );
+        System.out.println("=== CHROMIUM: lancé ===");
 
-            browser = playwright.chromium().launch(
-                    new BrowserType.LaunchOptions()
-                            .setHeadless(true)
-                            .setArgs(List.of(
-                                    "--no-sandbox",
-                                    "--disable-dev-shm-usage",
-                                    "--disable-blink-features=AutomationControlled",
-                                    "--disable-gpu"
-                            ))
-            );
-
-            log.info("✅ Chromium lancé avec succès");
-
-        } catch (Exception e) {
-            log.error("❌ Playwright init failed : {}", e.getMessage(), e);
-            safeClose();
-        }
+    } catch (Exception e) {
+        System.err.println("=== ERREUR PLAYWRIGHT ===");
+        e.printStackTrace();
     }
+}
 
     @PreDestroy
     public void shutdown() {
