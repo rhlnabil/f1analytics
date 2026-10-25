@@ -1,8 +1,10 @@
 import axios from 'axios';
 
+const API_BASE = 'https://f1analytics.hostless.app';
+
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api',
-  timeout: 20000,   // ✅ 20s max — évite les chargements infinis
+  baseURL: `${API_BASE}/api`,
+  timeout: 20000,
 });
 
 /* ===== Intercepteur requête : ajoute le JWT ===== */
@@ -21,8 +23,6 @@ api.interceptors.response.use(
 
     console.warn(`[API] ${status} on ${url}`);
 
-    /* ✅ Ne JAMAIS déconnecter sur les endpoints publics
-       (news, drivers, teams, races, standings...) */
     const isPublicEndpoint =
       url.includes('/auth/login') ||
       url.includes('/auth/register') ||
@@ -64,6 +64,6 @@ export const uploadFile = async (file) => {
   return data;
 };
 
-export const API_BASE = 'http://localhost:8080';
+export { API_BASE };
 
 export default api;
