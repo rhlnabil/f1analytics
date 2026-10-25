@@ -9,13 +9,15 @@ COPY src ./src
 
 RUN mvn clean package -DskipTests
 
-# ===== RUNTIME AVEC PLAYWRIGHT =====
+# ===== RUNTIME JAVA + PLAYWRIGHT =====
 FROM mcr.microsoft.com/playwright/java:v1.48.0-noble
 
 WORKDIR /app
 
 COPY --from=build /app/target/*.jar app.jar
 
+# Port de l'application Spring Boot
 EXPOSE 8080
 
+# Démarrage de l'application
 CMD ["java", "-jar", "app.jar"]
