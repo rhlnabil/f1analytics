@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
 
-const SURFACE = '#0b0b12';
+const SURFACE = '#0a0a0a';
 const BORDER = 'rgba(255,255,255,0.08)';
 
 const MOCK_NEWS = [
@@ -81,6 +81,8 @@ function timeAgo(isoString) {
 /* ============================================================ */
 function FeaturedCard({ article, accent }) {
   const [hovered, setHovered] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false);
+  const showImage = article.imageUrl && !imgFailed;
 
   return (
     <Link
@@ -89,94 +91,169 @@ function FeaturedCard({ article, accent }) {
       onMouseLeave={() => setHovered(false)}
       style={{
         position: 'relative',
-        display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
-        minHeight: 520, padding: '48px 48px 44px',
-        borderRadius: 16, overflow: 'hidden',
-        textDecoration: 'none', color: 'inherit',
-        background: article.imageUrl ? '#05070a' : SURFACE,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-end',
+        minHeight: 'clamp(20rem, 40vw, 32.5rem)',
+        padding: 'clamp(1.5rem, 3vw, 3rem)',
+        borderRadius: 16,
+        overflow: 'hidden',
+        textDecoration: 'none',
+        color: 'inherit',
+        background: '#0a0a0a',
         border: `1px solid ${hovered ? accent : BORDER}`,
         transition: 'border-color 0.25s',
       }}
     >
-      {article.imageUrl && (
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `url(${article.imageUrl})`,
-          backgroundSize: 'cover', backgroundPosition: 'center',
-          opacity: hovered ? 1 : 0.92,
-          transition: 'opacity 0.4s',
-        }} />
+      {showImage && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: `url(${article.imageUrl})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundColor: '#0a0a0a',
+            opacity: hovered ? 1 : 0.92,
+            transition: 'opacity 0.4s',
+          }}
+          aria-hidden="true"
+          onError={() => setImgFailed(true)}
+        />
       )}
 
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: 'linear-gradient(180deg, rgba(5,7,10,0.15) 0%, rgba(5,7,10,0.85) 55%, rgba(5,7,10,0.98) 100%)',
-        pointerEvents: 'none',
-      }} />
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background:
+            'linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.85) 55%, rgba(0,0,0,0.98) 100%)',
+          pointerEvents: 'none',
+        }}
+      />
 
       {article.category && (
-        <div style={{
-          position: 'absolute', top: 24, left: 24,
-          padding: '6px 12px', background: accent, color: '#fff',
-          fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 900,
-          letterSpacing: '0.08em', textTransform: 'uppercase',
-          borderRadius: 3, zIndex: 2,
-        }}>{article.category}</div>
+        <div
+          style={{
+            position: 'absolute',
+            top: 'clamp(0.75rem, 1.5vw, 1.5rem)',
+            left: 'clamp(0.75rem, 1.5vw, 1.5rem)',
+            padding: '0.375rem 0.75rem',
+            background: accent,
+            color: '#fff',
+            fontFamily: 'var(--font-display)',
+            fontSize: '0.75rem',
+            fontWeight: 900,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            borderRadius: 3,
+            zIndex: 2,
+          }}
+        >
+          {article.category}
+        </div>
       )}
 
-      <div style={{
-        position: 'absolute', top: 24, right: 24,
-        padding: '6px 12px', background: 'rgba(0,0,0,0.75)',
-        border: `1px solid ${BORDER}`, borderRadius: 3,
-        fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 700,
-        letterSpacing: '0.06em', color: '#fff', zIndex: 2,
-      }}>{timeAgo(article.publishedAt)}</div>
+      <div
+        style={{
+          position: 'absolute',
+          top: 'clamp(0.75rem, 1.5vw, 1.5rem)',
+          right: 'clamp(0.75rem, 1.5vw, 1.5rem)',
+          padding: '0.375rem 0.75rem',
+          background: 'rgba(0,0,0,0.85)',
+          border: `1px solid ${BORDER}`,
+          borderRadius: 3,
+          fontFamily: 'var(--font-display)',
+          fontSize: '0.75rem',
+          fontWeight: 700,
+          letterSpacing: '0.06em',
+          color: '#fff',
+          zIndex: 2,
+        }}
+      >
+        {timeAgo(article.publishedAt)}
+      </div>
 
       <div style={{ position: 'relative', zIndex: 2 }}>
-        <div style={{
-          fontFamily: 'var(--font-display)', fontSize: 12,
-          letterSpacing: '0.08em', color: accent, fontWeight: 700,
-          textTransform: 'uppercase', marginBottom: 18,
-          display: 'flex', alignItems: 'center', gap: 12,
-        }}>
-          <span style={{ width: 24, height: 2, background: accent }} />
+        <div
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: '0.875rem',
+            letterSpacing: '0.08em',
+            color: accent,
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            marginBottom: '1rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+          }}
+        >
+          <span style={{ width: '1.5rem', height: 2, background: accent }} />
           {article.source?.toUpperCase() || 'F1 APEX'}
         </div>
 
-        <h2 style={{
-          fontFamily: 'var(--font-heading)',
-          fontSize: 'clamp(28px, 4.2vw, 48px)',
-          fontWeight: 900, textTransform: 'uppercase',
-          lineHeight: 1.0, letterSpacing: '-0.02em',
-          color: '#fff', marginBottom: 18,
-          textWrap: 'balance',
-        }}>{article.title}</h2>
+        <h2
+          style={{
+            fontFamily: 'var(--font-heading)',
+            fontSize: 'clamp(1.5rem, 3.5vw + 0.5rem, 3rem)',
+            fontWeight: 900,
+            textTransform: 'uppercase',
+            lineHeight: 1.0,
+            letterSpacing: '-0.02em',
+            color: '#fff',
+            marginBottom: '1rem',
+            textWrap: 'balance',
+          }}
+        >
+          {article.title}
+        </h2>
 
-        <p style={{
-          fontFamily: 'var(--font-heading)',
-          fontSize: 15, color: 'rgba(255,255,255,0.7)',
-          lineHeight: 1.6, marginBottom: 28,
-          maxWidth: '55ch',
-          display: '-webkit-box', WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical', overflow: 'hidden',
-        }}>{article.excerpt}</p>
+        <p
+          style={{
+            fontFamily: 'var(--font-heading)',
+            fontSize: 'clamp(0.9375rem, 1.2vw + 0.5rem, 1.125rem)',
+            color: 'rgba(255,255,255,0.7)',
+            lineHeight: 1.6,
+            marginBottom: '1.75rem',
+            maxWidth: '55ch',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+        >
+          {article.excerpt}
+        </p>
 
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 10,
-          padding: '12px 24px',
-          background: hovered ? accent : 'transparent',
-          border: `1px solid ${hovered ? accent : 'rgba(255,255,255,0.3)'}`,
-          borderRadius: 4,
-          fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 900,
-          letterSpacing: '0.1em', textTransform: 'uppercase', color: '#fff',
-          transition: 'background 0.25s, border-color 0.25s',
-        }}>
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.625rem',
+            padding: '0.75rem 1.5rem',
+            background: hovered ? accent : 'transparent',
+            border: `1px solid ${hovered ? accent : 'rgba(255,255,255,0.3)'}`,
+            borderRadius: 4,
+            fontFamily: 'var(--font-display)',
+            fontSize: '0.875rem',
+            fontWeight: 900,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            color: '#fff',
+            transition: 'background 0.25s, border-color 0.25s',
+          }}
+        >
           Lire l'article
-          <span style={{
-            fontSize: 14,
-            transform: hovered ? 'translateX(4px)' : 'translateX(0)',
-            transition: 'transform 0.25s',
-          }}>→</span>
+          <span
+            style={{
+              fontSize: '1rem',
+              transform: hovered ? 'translateX(4px)' : 'translateX(0)',
+              transition: 'transform 0.25s',
+            }}
+          >
+            →
+          </span>
         </div>
       </div>
     </Link>
@@ -188,6 +265,8 @@ function FeaturedCard({ article, accent }) {
 /* ============================================================ */
 function NewsCard({ article, accent }) {
   const [hovered, setHovered] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false);
+  const showImage = article.imageUrl && !imgFailed;
 
   return (
     <Link
@@ -196,91 +275,204 @@ function NewsCard({ article, accent }) {
       onMouseLeave={() => setHovered(false)}
       style={{
         position: 'relative',
-        display: 'flex', flexDirection: 'column',
-        height: '100%', borderRadius: 12, overflow: 'hidden',
-        textDecoration: 'none', color: 'inherit',
-        background: SURFACE,
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        borderRadius: 12,
+        overflow: 'hidden',
+        textDecoration: 'none',
+        color: 'inherit',
+        background: '#0a0a0a',
         border: `1px solid ${hovered ? accent : BORDER}`,
         transition: 'border-color 0.25s',
       }}
     >
-      <div style={{
-        position: 'relative', height: 200, overflow: 'hidden',
-        background: article.imageUrl
-          ? `url(${article.imageUrl}) center/cover`
-          : 'rgba(255,255,255,0.03)',
-      }}>
-        {article.category && (
-          <div style={{
-            position: 'absolute', top: 14, left: 14,
-            padding: '5px 10px', background: accent, color: '#fff',
-            fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 900,
-            letterSpacing: '0.08em', textTransform: 'uppercase',
-            borderRadius: 3, zIndex: 2,
-          }}>{article.category}</div>
+      <div
+        style={{
+          position: 'relative',
+          height: 'clamp(10rem, 15vw, 12.5rem)',
+          overflow: 'hidden',
+          background: showImage
+            ? `url(${article.imageUrl}) center/cover`
+            : '#0a0a0a',
+          backgroundColor: '#0a0a0a',
+        }}
+      >
+        {!showImage && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'grid',
+              placeItems: 'center',
+              color: 'rgba(225,6,0,0.18)',
+              fontSize: '3rem',
+              fontFamily: 'var(--font-display)',
+            }}
+          >
+            📰
+          </div>
         )}
 
-        <div style={{
-          position: 'absolute', top: 14, right: 14,
-          padding: '5px 10px', background: 'rgba(0,0,0,0.75)',
-          border: `1px solid ${BORDER}`, borderRadius: 3,
-          fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700,
-          letterSpacing: '0.06em', color: '#fff', zIndex: 2,
-        }}>{timeAgo(article.publishedAt)}</div>
+        {article.category && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '0.875rem',
+              left: '0.875rem',
+              padding: '0.3125rem 0.625rem',
+              background: accent,
+              color: '#fff',
+              fontFamily: 'var(--font-display)',
+              fontSize: '0.625rem',
+              fontWeight: 900,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              borderRadius: 3,
+              zIndex: 2,
+            }}
+          >
+            {article.category}
+          </div>
+        )}
+
+        <div
+          style={{
+            position: 'absolute',
+            top: '0.875rem',
+            right: '0.875rem',
+            padding: '0.3125rem 0.625rem',
+            background: 'rgba(0,0,0,0.85)',
+            border: `1px solid ${BORDER}`,
+            borderRadius: 3,
+            fontFamily: 'var(--font-display)',
+            fontSize: '0.625rem',
+            fontWeight: 700,
+            letterSpacing: '0.06em',
+            color: '#fff',
+            zIndex: 2,
+          }}
+        >
+          {timeAgo(article.publishedAt)}
+        </div>
       </div>
 
-      <div style={{
-        position: 'relative',
-        padding: '24px 24px 22px',
-        display: 'flex', flexDirection: 'column', flex: 1,
-      }}>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          fontFamily: 'var(--font-display)', fontSize: 11,
-          letterSpacing: '0.08em', color: accent, fontWeight: 700,
-          marginBottom: 14, textTransform: 'uppercase',
-        }}>
-          <span style={{ width: 4, height: 4, background: accent, borderRadius: '50%' }} />
+      <div
+        style={{
+          position: 'relative',
+          padding: 'clamp(1rem, 2vw, 1.5rem)',
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+          background: '#0a0a0a',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            fontFamily: 'var(--font-display)',
+            fontSize: '0.6875rem',
+            letterSpacing: '0.08em',
+            color: accent,
+            fontWeight: 700,
+            marginBottom: '0.875rem',
+            textTransform: 'uppercase',
+          }}
+        >
+          <span
+            style={{
+              width: 4,
+              height: 4,
+              background: accent,
+              borderRadius: '50%',
+            }}
+          />
           {article.source?.toUpperCase() || 'SOURCE'}
         </div>
 
-        <h3 style={{
-          fontFamily: 'var(--font-heading)',
-          fontSize: 20, fontWeight: 900, textTransform: 'uppercase',
-          lineHeight: 1.2, color: '#fff', marginBottom: 12,
-          letterSpacing: '-0.01em', textWrap: 'balance',
-          display: '-webkit-box', WebkitLineClamp: 3,
-          WebkitBoxOrient: 'vertical', overflow: 'hidden',
-        }}>{article.title}</h3>
+        <h3
+          style={{
+            fontFamily: 'var(--font-heading)',
+            fontSize: 'clamp(1rem, 1.5vw + 0.5rem, 1.25rem)',
+            fontWeight: 900,
+            textTransform: 'uppercase',
+            lineHeight: 1.2,
+            color: '#fff',
+            marginBottom: '0.75rem',
+            letterSpacing: '-0.01em',
+            textWrap: 'balance',
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+        >
+          {article.title}
+        </h3>
 
-        <p style={{
-          fontFamily: 'var(--font-heading)',
-          fontSize: 14, color: 'rgba(255,255,255,0.55)',
-          lineHeight: 1.6, marginBottom: 20, flex: 1,
-          display: '-webkit-box', WebkitLineClamp: 3,
-          WebkitBoxOrient: 'vertical', overflow: 'hidden',
-        }}>{article.excerpt}</p>
+        <p
+          style={{
+            fontFamily: 'var(--font-heading)',
+            fontSize: 'clamp(0.8125rem, 1vw + 0.4rem, 0.9375rem)',
+            color: 'rgba(255,255,255,0.55)',
+            lineHeight: 1.6,
+            marginBottom: '1.25rem',
+            flex: 1,
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+        >
+          {article.excerpt}
+        </p>
 
-        <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          paddingTop: 16, borderTop: `1px solid ${BORDER}`, gap: 8,
-        }}>
-          <span style={{
-            fontFamily: 'var(--font-display)', fontSize: 11,
-            letterSpacing: '0.06em', color: 'rgba(255,255,255,0.4)', fontWeight: 700,
-          }}>{article.readTime ? `${article.readTime} min` : '—'}</span>
-          <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            fontSize: 12, color: accent,
-            fontFamily: 'var(--font-display)', fontWeight: 900,
-            letterSpacing: '0.08em', textTransform: 'uppercase',
-          }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingTop: '1rem',
+            borderTop: `1px solid ${BORDER}`,
+            gap: '0.5rem',
+          }}
+        >
+          <span
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '0.6875rem',
+              letterSpacing: '0.06em',
+              color: 'rgba(255,255,255,0.4)',
+              fontWeight: 700,
+            }}
+          >
+            {article.readTime ? `${article.readTime} min` : '—'}
+          </span>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.375rem',
+              fontSize: '0.75rem',
+              color: accent,
+              fontFamily: 'var(--font-display)',
+              fontWeight: 900,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+            }}
+          >
             Lire
-            <span style={{
-              fontSize: 14,
-              transform: hovered ? 'translateX(4px)' : 'translateX(0)',
-              transition: 'transform 0.25s',
-            }}>→</span>
+            <span
+              style={{
+                fontSize: '0.875rem',
+                transform: hovered ? 'translateX(4px)' : 'translateX(0)',
+                transition: 'transform 0.25s',
+              }}
+            >
+              →
+            </span>
           </span>
         </div>
       </div>
@@ -313,36 +505,66 @@ export default function HomeNewsSection({ accentColor = '#e10600' }) {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   const categories = useMemo(() => {
     const set = new Set();
-    articles.forEach(a => { if (a.category) set.add(a.category); });
+    articles.forEach((a) => {
+      if (a.category) set.add(a.category);
+    });
     return ['all', ...Array.from(set)];
   }, [articles]);
 
   const filtered = useMemo(() => {
     if (filter === 'all') return articles;
-    return articles.filter(a => a.category === filter);
+    return articles.filter((a) => a.category === filter);
   }, [articles, filter]);
 
   const [featured, ...rest] = filtered;
 
   if (loading) {
     return (
-      <section className="container" style={{ maxWidth: 1400, padding: '100px 32px 80px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
-          <div style={{
-            width: 48, height: 48, borderRadius: '50%',
-            border: `3px solid rgba(225,6,0,0.15)`,
-            borderTopColor: accentColor,
-            animation: 'nsSpin 0.9s linear infinite',
-          }} />
-          <div style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 12, letterSpacing: '0.1em',
-            color: accentColor, fontWeight: 700, textTransform: 'uppercase',
-          }}>Chargement des actualités</div>
+      <section
+        className="home-news"
+        style={{
+          maxWidth: 1400,
+          margin: '0 auto',
+          padding: 'clamp(3rem, 6vw, 6rem) 0',
+          background: '#0a0a0a',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '1.25rem',
+          }}
+        >
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: '50%',
+              border: `3px solid rgba(225,6,0,0.15)`,
+              borderTopColor: accentColor,
+              animation: 'nsSpin 0.9s linear infinite',
+            }}
+          />
+          <div
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '0.75rem',
+              letterSpacing: '0.1em',
+              color: accentColor,
+              fontWeight: 700,
+              textTransform: 'uppercase',
+            }}
+          >
+            Chargement des actualités
+          </div>
         </div>
         <style>{`@keyframes nsSpin { to { transform: rotate(360deg); } }`}</style>
       </section>
@@ -350,132 +572,224 @@ export default function HomeNewsSection({ accentColor = '#e10600' }) {
   }
 
   return (
-    <section className="container" style={{
-      maxWidth: 1400, padding: '120px 32px 80px', position: 'relative',
-    }}>
-      <div style={{ marginBottom: 60 }}>
-        <div style={{
-          display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
-          gap: 40, flexWrap: 'wrap', marginBottom: 32,
-        }}>
+    <section
+      className="home-news"
+      style={{
+        maxWidth: 1400,
+        margin: '0 auto',
+        padding:
+          'clamp(3rem, 6vw, 6rem) clamp(1rem, 2vw, 2rem) clamp(3rem, 6vw, 5rem)',
+        position: 'relative',
+        background: '#0a0a0a',
+      }}
+    >
+      <div style={{ marginBottom: 'clamp(2rem, 4vw, 3.75rem)' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+            gap: 'clamp(1rem, 3vw, 2.5rem)',
+            flexWrap: 'wrap',
+            marginBottom: 'clamp(1rem, 2vw, 2rem)',
+          }}
+        >
           <div style={{ maxWidth: 720 }}>
-            <h2 style={{
-              fontSize: 'clamp(40px, 6vw, 72px)',
-              fontWeight: 900, lineHeight: 0.95,
-              letterSpacing: '-0.03em', margin: 0,
-              textTransform: 'uppercase', color: '#fff',
-              marginBottom: 20, textWrap: 'balance',
-            }}>Actualités F1</h2>
+            <h2
+              style={{
+                fontSize: 'clamp(2rem, 6vw + 0.5rem, 4.5rem)',
+                fontWeight: 900,
+                lineHeight: 0.95,
+                letterSpacing: '-0.03em',
+                margin: 0,
+                textTransform: 'uppercase',
+                color: '#fff',
+                marginBottom: 'clamp(0.75rem, 2vw, 1.25rem)',
+                textWrap: 'balance',
+              }}
+            >
+              Actualités F1
+            </h2>
 
-            <p style={{
-              color: 'rgba(255,255,255,0.55)', fontSize: 16,
-              fontFamily: 'var(--font-heading)',
-              margin: 0, maxWidth: '55ch', lineHeight: 1.65,
-            }}>
+            <p
+              style={{
+                color: 'rgba(255,255,255,0.55)',
+                fontSize: 'clamp(0.9375rem, 1.2vw + 0.4rem, 1.0625rem)',
+                fontFamily: 'var(--font-heading)',
+                margin: 0,
+                maxWidth: '55ch',
+                lineHeight: 1.65,
+              }}
+            >
               Les dernières nouvelles de la Formule 1, agrégées en temps réel
               depuis les meilleures sources internationales.
             </p>
           </div>
 
-          <Link to="/news" style={{
-            display: 'inline-flex', alignItems: 'center', gap: 10,
-            padding: '14px 24px', background: 'transparent',
-            border: `1px solid ${accentColor}`, borderRadius: 4,
-            color: '#fff',
-            fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 900,
-            letterSpacing: '0.08em', textTransform: 'uppercase',
-            textDecoration: 'none', transition: 'background 0.25s',
-            alignSelf: 'flex-start',
-          }}
-            onMouseEnter={e => { e.currentTarget.style.background = accentColor; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+          <Link
+            to="/news"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.625rem',
+              padding: '0.875rem 1.5rem',
+              background: 'transparent',
+              border: `1px solid ${accentColor}`,
+              borderRadius: 4,
+              color: '#fff',
+              fontFamily: 'var(--font-display)',
+              fontSize: '0.75rem',
+              fontWeight: 900,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              textDecoration: 'none',
+              transition: 'background 0.25s',
+              alignSelf: 'flex-start',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = accentColor;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+            }}
           >
             Tout voir
-            <span style={{ fontSize: 14 }}>→</span>
+            <span style={{ fontSize: '0.875rem' }}>→</span>
           </Link>
         </div>
 
         {categories.length > 1 && (
-          <div style={{
-            display: 'flex', gap: 8, flexWrap: 'wrap',
-            paddingTop: 24, borderTop: `1px solid ${BORDER}`,
-          }}>
-            {categories.map(cat => {
+          <div
+            style={{
+              display: 'flex',
+              gap: '0.5rem',
+              flexWrap: 'wrap',
+              paddingTop: '1.5rem',
+              borderTop: `1px solid ${BORDER}`,
+            }}
+          >
+            {categories.map((cat) => {
               const active = filter === cat;
               const label = cat === 'all' ? 'Tout' : cat;
               return (
-                <button key={cat} onClick={() => setFilter(cat)} style={{
-                  all: 'unset', cursor: 'pointer',
-                  padding: '8px 16px',
-                  background: active ? accentColor : 'transparent',
-                  border: `1px solid ${active ? accentColor : 'rgba(255,255,255,0.12)'}`,
-                  borderRadius: 4,
-                  fontFamily: 'var(--font-display)', fontSize: 11,
-                  fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase',
-                  color: active ? '#fff' : 'rgba(255,255,255,0.6)',
-                  transition: 'all 0.2s',
-                }}>{label}</button>
+                <button
+                  key={cat}
+                  onClick={() => setFilter(cat)}
+                  style={{
+                    all: 'unset',
+                    cursor: 'pointer',
+                    padding: '0.5rem 1rem',
+                    background: active ? accentColor : 'transparent',
+                    border: `1px solid ${
+                      active ? accentColor : 'rgba(255,255,255,0.12)'
+                    }`,
+                    borderRadius: 4,
+                    fontFamily: 'var(--font-display)',
+                    fontSize: '0.6875rem',
+                    fontWeight: 900,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    color: active ? '#fff' : 'rgba(255,255,255,0.6)',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  {label}
+                </button>
               );
             })}
           </div>
         )}
 
         {isFallback && (
-          <div style={{
-            marginTop: 24, padding: '12px 16px',
-            background: 'rgba(255,135,0,0.06)',
-            border: '1px solid rgba(255,135,0,0.25)',
-            borderLeft: '3px solid #ff8700',
-            borderRadius: 6,
-            display: 'inline-flex', alignItems: 'center', gap: 12,
-            fontFamily: 'var(--font-heading)', fontSize: 13, color: '#ff8700',
-          }}>
+          <div
+            style={{
+              marginTop: '1.5rem',
+              padding: '0.75rem 1rem',
+              background: 'rgba(255,135,0,0.06)',
+              border: '1px solid rgba(255,135,0,0.25)',
+              borderLeft: '3px solid #ff8700',
+              borderRadius: 6,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              fontFamily: 'var(--font-heading)',
+              fontSize: '0.8125rem',
+              color: '#ff8700',
+              flexWrap: 'wrap',
+            }}
+          >
             Flux RSS indisponible — articles de démonstration affichés.
-            <button onClick={load} style={{
-              all: 'unset', cursor: 'pointer',
-              padding: '4px 12px',
-              background: 'rgba(255,135,0,0.15)',
-              borderRadius: 3,
-              fontWeight: 700, fontSize: 11, letterSpacing: '0.08em',
-              border: '1px solid rgba(255,135,0,0.4)',
-              textTransform: 'uppercase',
-            }}>Réessayer</button>
+            <button
+              onClick={load}
+              style={{
+                all: 'unset',
+                cursor: 'pointer',
+                padding: '0.25rem 0.75rem',
+                background: 'rgba(255,135,0,0.15)',
+                borderRadius: 3,
+                fontWeight: 700,
+                fontSize: '0.6875rem',
+                letterSpacing: '0.08em',
+                border: '1px solid rgba(255,135,0,0.4)',
+                textTransform: 'uppercase',
+              }}
+            >
+              Réessayer
+            </button>
           </div>
         )}
       </div>
 
       {filtered.length === 0 ? (
-        <div style={{
-          padding: 100, textAlign: 'center',
-          background: SURFACE, border: `1px dashed ${BORDER}`,
-          borderRadius: 16, color: 'rgba(255,255,255,0.5)',
-        }}>
-          <div style={{
-            fontFamily: 'var(--font-heading)', fontSize: 20,
-            fontWeight: 700, marginBottom: 8,
-          }}>Aucune actualité</div>
-          <div style={{ fontSize: 14, opacity: 0.7 }}>
+        <div
+          style={{
+            padding: '6rem 1rem',
+            textAlign: 'center',
+            background: SURFACE,
+            border: `1px dashed ${BORDER}`,
+            borderRadius: 16,
+            color: 'rgba(255,255,255,0.5)',
+          }}
+        >
+          <div
+            style={{
+              fontFamily: 'var(--font-heading)',
+              fontSize: '1.25rem',
+              fontWeight: 700,
+              marginBottom: '0.5rem',
+            }}
+          >
+            Aucune actualité
+          </div>
+          <div style={{ fontSize: '0.875rem', opacity: 0.7 }}>
             Le flux RSS est peut-être momentanément indisponible.
           </div>
         </div>
       ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(12, 1fr)',
-          gap: 24,
-        }}>
+        <div
+          className="home-news-grid"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(12, 1fr)',
+            gap: 'clamp(1rem, 2vw, 1.75rem)',
+          }}
+        >
           {featured && (
-            <div style={{ gridColumn: 'span 8' }}>
+            <div className="hn-featured" style={{ gridColumn: 'span 8' }}>
               <FeaturedCard article={featured} accent={accentColor} />
             </div>
           )}
           {rest[0] && (
-            <div style={{ gridColumn: 'span 4' }}>
+            <div className="hn-card" style={{ gridColumn: 'span 4' }}>
               <NewsCard article={rest[0]} accent={accentColor} />
             </div>
           )}
           {rest.slice(1).map((article) => (
-            <div key={article.id} style={{ gridColumn: 'span 4' }}>
+            <div
+              key={article.id}
+              className="hn-card"
+              style={{ gridColumn: 'span 4' }}
+            >
               <NewsCard article={article} accent={accentColor} />
             </div>
           ))}
@@ -483,16 +797,42 @@ export default function HomeNewsSection({ accentColor = '#e10600' }) {
       )}
 
       <style>{`
+        @keyframes nsSpin {
+          to { transform: rotate(360deg); }
+        }
+
+        /* ✅ Fond noir forcé */
+        .home-news,
+        .home-news > *,
+        .home-news-grid,
+        .home-news-grid > * {
+          background-color: transparent !important;
+        }
+        .home-news {
+          background: #0a0a0a !important;
+        }
+
+        .hn-featured,
+        .hn-card {
+          min-width: 0;
+        }
+
+        /* ✅ Tablette : featured 12, cards 6 */
         @media (max-width: 1024px) {
-          section > div[style*="grid-template-columns: repeat(12, 1fr)"] > div {
-            grid-column: span 6 !important;
-          }
-          section > div[style*="grid-template-columns: repeat(12, 1fr)"] > div:first-child {
+          .hn-featured {
             grid-column: span 12 !important;
           }
+          .hn-card {
+            grid-column: span 6 !important;
+          }
         }
+
+        /* ✅ Mobile : tout en 1 colonne */
         @media (max-width: 640px) {
-          section > div[style*="grid-template-columns: repeat(12, 1fr)"] > div {
+          .hn-featured {
+            grid-column: span 12 !important;
+          }
+          .hn-card {
             grid-column: span 12 !important;
           }
         }

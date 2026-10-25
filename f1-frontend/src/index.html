@@ -3,12 +3,33 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/Logo.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0a0a0a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="color-scheme" content="dark" />
     <title>F1 Apex — Race Intelligence</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Titillium+Web:ital,wght@0,300;0,400;0,600;0,700;0,900;1,900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+      /* ✅ Force noir dès le premier paint (évite flash blanc) */
+      html, body {
+        background-color: #0a0a0a !important;
+        margin: 0;
+        padding: 0;
+      }
+      #root {
+        background-color: #0a0a0a;
+        min-height: 100vh;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
