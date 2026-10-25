@@ -45,28 +45,17 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authorizeHttpRequests(auth -> auth
-                /* ============ CORS PREFLIGHT ============ */
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                /* ============ CHATBOT BOX (public) ============ */
                 .requestMatchers("/api/chat/**").permitAll()
-
-                /* ============ AUTH (public) ============ */
                 .requestMatchers(
                     "/api/auth/login",
                     "/api/auth/register",
                     "/api/auth/qr-login",
                     "/api/auth/qr-token"
                 ).permitAll()
-
-                /* ============ OAUTH2 ============ */
                 .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
-
-                /* ============ UPLOADS & STATIC ============ */
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/error", "/favicon.ico").permitAll()
-
-                /* ============ ENDPOINTS PUBLICS ============ */
                 .requestMatchers(
                     "/api/health/**",
                     "/api/news/**",
@@ -79,17 +68,9 @@ public class SecurityConfig {
                     "/api/quiz/**",
                     "/api/puzzle/images"
                 ).permitAll()
-
-                /* ============ PROTÉGÉ : ADMIN ============ */
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
-                /* ============ PROTÉGÉ : FAN ============ */
                 .requestMatchers("/api/fan/**").hasRole("FAN")
-
-                /* ============ UPLOAD (admin uniquement) ============ */
                 .requestMatchers("/api/upload/**").hasRole("ADMIN")
-
-                /* ============ TOUT LE RESTE ============ */
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth -> oauth
@@ -116,18 +97,30 @@ public class SecurityConfig {
     }
 
     /* ============================================================ */
-    /* ============ CORS ========================================= */
+    /* ============ CORS — AUTORISE CLOUDFLARE ==================== */
     /* ============================================================ */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
+
+        // ✅ Origines autorisées (frontend)
         config.setAllowedOrigins(List.of(
             "http://localhost:5173",
             "http://localhost:3000",
             "http://127.0.0.1:5173",
-            "https://f1analytics-2uu.pages.dev"
+            "https://f1analytics-2uu.pages.dev",     // ← Ton frontend Cloudflare
+            "https://f1analytics.hostless.app"       // ← Optionnel : si tu ouvres l'API direct
         ));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+
+        // ✅ Autorise aussi tous les sous-domaines *.pages.dev de Cloudflare
+        config.setAllowedOriginPatterns(List.of(
+            "https://*.pages.dev",
+            "https://*.hostless.app"
+        ));
+
+        config.setAllowedMethods(List.of(
+            "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+        ));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);
