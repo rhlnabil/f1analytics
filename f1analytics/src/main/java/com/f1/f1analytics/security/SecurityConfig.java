@@ -24,15 +24,6 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    /* ============================================================ */
-    /* ============ CONSTRUCTOR INJECTION ========================= */
-    /* ============================================================ */
-    /* ✅ FIX : plus de @Autowired sur les fields — injection par    */
-    /*    constructeur (recommandation officielle Spring)           */
-    /* ✅ FIX : plus d'import de JwtAuthenticationFilter /           */
-    /*    OAuth2SuccessHandler (même package → import redondant)    */
-    /* ============================================================ */
-
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
@@ -104,7 +95,7 @@ public class SecurityConfig {
             .oauth2Login(oauth -> oauth
                 .successHandler(oAuth2SuccessHandler)
                 .failureHandler((request, response, exception) -> {
-                    response.sendRedirect("http://localhost:5173/login?error=oauth_failed");
+                    response.sendRedirect("https://f1analytics-2uu.pages.dev/login?error=oauth_failed");
                 })
             )
             .exceptionHandling(ex -> ex
@@ -133,7 +124,8 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of(
             "http://localhost:5173",
             "http://localhost:3000",
-            "http://127.0.0.1:5173"
+            "http://127.0.0.1:5173",
+            "https://f1analytics-2uu.pages.dev"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
