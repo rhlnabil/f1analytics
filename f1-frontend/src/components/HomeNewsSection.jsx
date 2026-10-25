@@ -77,7 +77,7 @@ function timeAgo(isoString) {
 }
 
 /* ============================================================ */
-/* ============ FEATURED CARD ================================= */
+/* ============ FEATURED CARD (FOND NOIR PUR) ================= */
 /* ============================================================ */
 function FeaturedCard({ article, accent }) {
   const [hovered, setHovered] = useState(false);
@@ -100,6 +100,7 @@ function FeaturedCard({ article, accent }) {
         overflow: 'hidden',
         textDecoration: 'none',
         color: 'inherit',
+        /* ✅ NOIR PUR — plus de blanc */
         background: '#0a0a0a',
         border: `1px solid ${hovered ? accent : BORDER}`,
         transition: 'border-color 0.25s',
@@ -261,7 +262,7 @@ function FeaturedCard({ article, accent }) {
 }
 
 /* ============================================================ */
-/* ============ NEWS CARD ===================================== */
+/* ============ NEWS CARD (FOND NOIR PUR) ===================== */
 /* ============================================================ */
 function NewsCard({ article, accent }) {
   const [hovered, setHovered] = useState(false);
@@ -282,6 +283,7 @@ function NewsCard({ article, accent }) {
         overflow: 'hidden',
         textDecoration: 'none',
         color: 'inherit',
+        /* ✅ NOIR PUR */
         background: '#0a0a0a',
         border: `1px solid ${hovered ? accent : BORDER}`,
         transition: 'border-color 0.25s',
@@ -292,6 +294,7 @@ function NewsCard({ article, accent }) {
           position: 'relative',
           height: 'clamp(10rem, 15vw, 12.5rem)',
           overflow: 'hidden',
+          /* ✅ NOIR PUR même sans image */
           background: showImage
             ? `url(${article.imageUrl}) center/cover`
             : '#0a0a0a',
@@ -364,6 +367,7 @@ function NewsCard({ article, accent }) {
           display: 'flex',
           flexDirection: 'column',
           flex: 1,
+          /* ✅ NOIR PUR */
           background: '#0a0a0a',
         }}
       >
@@ -580,6 +584,7 @@ export default function HomeNewsSection({ accentColor = '#e10600' }) {
         padding:
           'clamp(3rem, 6vw, 6rem) clamp(1rem, 2vw, 2rem) clamp(3rem, 6vw, 5rem)',
         position: 'relative',
+        /* ✅ NOIR PUR */
         background: '#0a0a0a',
       }}
     >
@@ -801,7 +806,7 @@ export default function HomeNewsSection({ accentColor = '#e10600' }) {
           to { transform: rotate(360deg); }
         }
 
-        /* ✅ Fond noir forcé */
+        /* ✅ FOND NOIR FORCÉ */
         .home-news,
         .home-news > *,
         .home-news-grid,
@@ -817,24 +822,14 @@ export default function HomeNewsSection({ accentColor = '#e10600' }) {
           min-width: 0;
         }
 
-        /* ✅ Tablette : featured 12, cards 6 */
         @media (max-width: 1024px) {
-          .hn-featured {
-            grid-column: span 12 !important;
-          }
-          .hn-card {
-            grid-column: span 6 !important;
-          }
+          .hn-featured { grid-column: span 12 !important; }
+          .hn-card { grid-column: span 6 !important; }
         }
 
-        /* ✅ Mobile : tout en 1 colonne */
         @media (max-width: 640px) {
-          .hn-featured {
-            grid-column: span 12 !important;
-          }
-          .hn-card {
-            grid-column: span 12 !important;
-          }
+          .hn-featured { grid-column: span 12 !important; }
+          .hn-card { grid-column: span 12 !important; }
         }
       `}</style>
     </section>

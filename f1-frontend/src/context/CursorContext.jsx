@@ -37,23 +37,38 @@ function injectCursorStyles(color) {
   }
 
   styleEl.textContent = `
-    html, body {
-      cursor: ${arrowUrl} 5 2, auto !important;
+    /* ✅ FIX SCROLL — pas de !important sur html/body */
+    html {
+      cursor: ${arrowUrl} 5 2, auto;
     }
+    body {
+      cursor: ${arrowUrl} 5 2, auto;
+    }
+
+    /* ✅ Éléments interactifs → curseur pointer custom */
     a, button, [role="button"], [role="link"], [role="tab"],
     [role="menuitem"], [role="option"], summary, label[for],
     select, input[type="checkbox"], input[type="radio"],
     input[type="submit"], input[type="button"], input[type="file"] {
       cursor: ${pointerUrl} 5 2, pointer !important;
     }
+
+    /* ✅ Champs de saisie → curseur texte */
     input[type="text"], input[type="email"], input[type="password"],
     input[type="number"], input[type="search"], input[type="tel"],
     input[type="url"], input[type="date"], input[type="time"], textarea {
       cursor: text !important;
     }
+
+    /* ✅ Désactivé → not-allowed */
     button:disabled, input:disabled, select:disabled,
     textarea:disabled, [disabled] {
       cursor: not-allowed !important;
+    }
+
+    /* ✅ Scrollbar → curseur par défaut (évite le blocage) */
+    ::-webkit-scrollbar {
+      cursor: default !important;
     }
   `;
 }
