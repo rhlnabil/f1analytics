@@ -71,7 +71,7 @@ export default function PublicLayout({ children }) {
       if (index < lightState) return { bg: '#e10600', glow: '0 0 12px #e10600, 0 0 24px rgba(225,6,0,0.7)' };
       return { bg: '#1a0000', glow: 'none' };
     }
-    return { bg: '#00d26a', glow: '0 0 12px #00d26a, 0 0 24px rgba(0,210,106,0.7)' };
+    return { bg: '#00d26a', glow: '0 0 12px #00d26a, 0 0 24px rgba(210,106,0,0.7)' };
   };
 
   const footerLinks = [
@@ -83,17 +83,17 @@ export default function PublicLayout({ children }) {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', overflowX: 'hidden', width: '100%' }}>
 
       {/* Top status bar */}
       <div className="top-status-bar" style={{
         position: 'fixed', top: 0, left: 0, right: 0, height: 40, zIndex: 500,
         background: 'linear-gradient(90deg, #0a0a0f 0%, #15151c 50%, #0a0a0f 100%)',
         borderBottom: '1px solid rgba(225,6,0,0.25)',
-        padding: '0 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700,
         letterSpacing: '0.2em', color: 'var(--text-dim)',
-        overflow: 'visible', gap: 12,
+        overflow: 'hidden', gap: 8, maxWidth: '100vw',
       }}>
         <div style={{
           position: 'absolute', top: 0, bottom: 0, width: 200,
@@ -101,34 +101,34 @@ export default function PublicLayout({ children }) {
           animation: 'scanAcross 8s linear infinite', pointerEvents: 'none',
         }} />
 
-        <div className="top-bar-left" style={{ display: 'flex', alignItems: 'center', gap: 20, position: 'relative', zIndex: 1, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="top-bar-left" style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative', zIndex: 1, flexWrap: 'nowrap', minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
             <span style={{
               width: 6, height: 6, borderRadius: '50%',
               background: '#00d26a', boxShadow: '0 0 8px #00d26a',
               animation: 'pulseGlow 2s infinite',
             }} />
-            <span style={{ color: '#fff' }}>{t('statusBar.sessionLive')}</span>
+            <span style={{ color: '#fff', whiteSpace: 'nowrap' }}>{t('statusBar.sessionLive')}</span>
           </div>
-          <span className="hide-mobile" style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.15)' }} />
-          <span className="hide-mobile">{t('statusBar.fp1Season')}</span>
-          <span className="hide-mobile" style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.15)' }} />
-          <span className="hide-mobile" style={{ color: '#e10600', animation: 'blink 1.2s infinite step-end' }}>● {t('statusBar.rec')}</span>
+          <span className="hide-mobile" style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.15)', flexShrink: 0 }} />
+          <span className="hide-mobile" style={{ whiteSpace: 'nowrap' }}>{t('statusBar.fp1Season')}</span>
+          <span className="hide-mobile" style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.15)', flexShrink: 0 }} />
+          <span className="hide-mobile" style={{ color: '#e10600', animation: 'blink 1.2s infinite step-end', whiteSpace: 'nowrap' }}>● {t('statusBar.rec')}</span>
 
-          <span className="hide-mobile" style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.15)' }} />
-          <NextRaceCountdown variant="compact" accentColor="#e10600" />
+          <span className="hide-mobile" style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.15)', flexShrink: 0 }} />
+          <div className="hide-mobile"><NextRaceCountdown variant="compact" accentColor="#e10600" /></div>
 
           <div className="hide-mobile" style={{
-            display: 'flex', gap: 4, padding: '4px 8px',
+            display: 'flex', gap: 3, padding: '3px 6px',
             background: 'rgba(0,0,0,0.6)',
             border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 4, marginLeft: 8,
+            borderRadius: 4, marginLeft: 4, flexShrink: 0,
           }}>
             {[0, 1, 2, 3, 4].map((i) => {
               const { bg, glow } = getLightColor(i);
               return (
                 <span key={i} style={{
-                  width: 8, height: 8, borderRadius: '50%',
+                  width: 7, height: 7, borderRadius: '50%',
                   background: bg,
                   boxShadow: glow !== 'none' ? glow : 'inset 0 0 4px rgba(0,0,0,0.9)',
                   transition: 'background 0.25s ease, box-shadow 0.25s ease',
@@ -139,7 +139,7 @@ export default function PublicLayout({ children }) {
           </div>
         </div>
 
-        <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative', zIndex: 1 }}>
+        <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative', zIndex: 1, flexShrink: 0 }}>
           <WeatherWidget />
           <LanguageSwitcher />
         </div>
@@ -161,7 +161,7 @@ export default function PublicLayout({ children }) {
         socialItems={socialItems}
       />
 
-      <main style={{ flex: 1, position: 'relative', zIndex: 1, paddingTop: 110 }}>
+      <main style={{ flex: 1, position: 'relative', zIndex: 1, paddingTop: 110, overflowX: 'hidden', width: '100%' }}>
         {children}
       </main>
 
@@ -170,6 +170,7 @@ export default function PublicLayout({ children }) {
         borderTop: '1px solid rgba(225,6,0,0.15)',
         background: 'linear-gradient(180deg, rgba(10,10,15,0.6) 0%, rgba(5,5,8,0.95) 100%)',
         padding: '70px 40px 30px', marginTop: 100, overflow: 'hidden', zIndex: 1,
+        width: '100%', maxWidth: '100vw',
       }}>
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0, height: 1,
@@ -186,6 +187,7 @@ export default function PublicLayout({ children }) {
                   width: 50, height: 50, display: 'grid', placeItems: 'center',
                   border: '1px solid rgba(225,6,0,0.3)',
                   borderRadius: 4, background: 'rgba(225,6,0,0.05)',
+                  flexShrink: 0,
                 }}>
                   <img src="/Logo.png" alt="F1 Apex" style={{ height: 36, width: 'auto' }} />
                 </div>
@@ -319,7 +321,11 @@ export default function PublicLayout({ children }) {
         @keyframes scanAcross { 0%{transform:translateX(-100%)} 100%{transform:translateX(100vw)} }
         @keyframes borderSlide { 0%{background-position:0% 0%} 100%{background-position:200% 0%} }
 
-        /* ✅ RESPONSIVE — Tablette */
+        .top-status-bar {
+          max-width: 100vw !important;
+          overflow: hidden !important;
+        }
+
         @media (max-width: 1024px) {
           .footer-grid {
             grid-template-columns: 1fr 1fr !important;
@@ -327,7 +333,6 @@ export default function PublicLayout({ children }) {
           }
         }
 
-        /* ✅ RESPONSIVE — Mobile */
         @media (max-width: 900px) {
           .hide-mobile {
             display: none !important;
@@ -336,12 +341,17 @@ export default function PublicLayout({ children }) {
           .top-status-bar {
             padding: 0 10px !important;
             font-size: 8px !important;
-            letter-spacing: 0.1em !important;
+            letter-spacing: 0.05em !important;
+            height: 36px !important;
           }
 
-          .top-bar-left,
-          .top-bar-right {
+          .top-bar-left {
             gap: 8px !important;
+            overflow: hidden !important;
+          }
+
+          .top-bar-right {
+            display: none !important;
           }
 
           .footer-grid {
@@ -359,14 +369,19 @@ export default function PublicLayout({ children }) {
             text-align: center !important;
             gap: 12px !important;
           }
+
+          main {
+            padding-top: 90px !important;
+          }
         }
 
         @media (max-width: 600px) {
-          .top-status-bar {
-            height: 36px !important;
+          main {
+            padding-top: 80px !important;
           }
-          .top-bar-right {
-            display: none !important;
+
+          .top-status-bar {
+            height: 32px !important;
           }
         }
       `}</style>

@@ -57,13 +57,29 @@ const PageLoader = () => (
 export default function App() {
   return (
     <BrowserRouter>
-      <div style={{
-        position: 'fixed', inset: 0,
-        width: '100vw', height: '100vh',
-        pointerEvents: 'none', zIndex: 0, opacity: 0.45,
-        mixBlendMode: 'screen',
-      }} aria-hidden="true">
-        <Aurora colorStops={['#7a0300', '#e10600', '#ff1e00']} amplitude={0.9} blend={0.35} speed={0.8} />
+      {/* ✅ Aurora en background — SANS mixBlendMode screen (évite le blanc) */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          inset: 0,
+          width: '100vw',
+          height: '100vh',
+          pointerEvents: 'none',
+          zIndex: 0,
+          opacity: 0.45,
+          background: '#0a0a0a',
+          mixBlendMode: 'normal',
+          overflow: 'hidden',
+        }}
+      >
+        <Aurora
+          colorStops={['#7a0300', '#e10600', '#ff1e00']}
+          amplitude={0.9}
+          blend={0.35}
+          speed={0.8}
+          lightMode={false}
+        />
       </div>
 
       <div style={{ position: 'relative', zIndex: 1 }}>
