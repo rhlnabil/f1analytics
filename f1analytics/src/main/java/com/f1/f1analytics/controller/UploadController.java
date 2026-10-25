@@ -1,19 +1,26 @@
 package com.f1.f1analytics.controller;
 
+import com.cloudinary.Cloudinary;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.*;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/upload")
+@RequiredArgsConstructor
+@Slf4j
 public class UploadController {
 
-    private static final String UPLOAD_DIR = "uploads";
+    private final Cloudinary cloudinary;
+
+    @Value("${cloudinary.folder:f1apex}")
+    private String folder;
 
     @PostMapping
     public ResponseEntity<?> upload(@RequestParam("file") MultipartFile file) {
@@ -22,29 +29,34 @@ public class UploadController {
         }
 
         try {
-            // Créer le dossier s'il n'existe pas
-            Path uploadPath = Paths.get(UPLOAD_DIR).toAbsolutePath();
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
+            log.info("☁️ Upload Cloudinary : {} ({} bytes)",
+                file.getOriginalFilename(), file.getSize());
 
-            // Nom unique : uuid + extension d'origine
-            String originalName = file.getOriginalFilename();
-            String ext = originalName != null && originalName.contains(".")
-                ? originalName.substring(originalName.lastIndexOf("."))
-                : ".jpg";
-            String filename = UUID.randomUUID().toString() + ext;
+            Map<String, Object> options = new HashMap<>();
+            options.put("folder", folder);
+            options.put("resource_type", "image");
+            options.put("use_filename", true);
+            options.put("unique_filename", true);
+            options.put("overwrite", false);
 
-            // Sauvegarde
-            Path target = uploadPath.resolve(filename);
-            Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> result = cloudinary.uploader()
+                .upload(file.getBytes(), options);
 
-            // Retourne l'URL publique
+            String url = (String) result.get("secure_url");
+            String publicId = (String) result.get("public_id");
+
+            log.info("✅ Cloudinary OK : {} → {}", publicId, url);
+
             return ResponseEntity.ok(Map.of(
-                "filename", filename,
-                "url", "/uploads/" + filename
+                "url", url,
+                "publicId", publicId,
+                "filename", file.getOriginalFilename() != null
+                    ? file.getOriginalFilename() : "file"
             ));
-        } catch (IOException e) {
+
+        } catch (Exception e) {
+            log.error("❌ Upload Cloudinary échoué : {}", e.getMessage(), e);
             return ResponseEntity.status(500)
                 .body(Map.of("error", "Erreur upload : " + e.getMessage()));
         }
