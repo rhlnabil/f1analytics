@@ -26,7 +26,6 @@ function svgToUrl(svg) {
 function injectCursorStyles(color) {
   const c = color || DEFAULT_COLOR;
 
-  const arrowUrl   = svgToUrl(buildArrowSvg(c));
   const pointerUrl = svgToUrl(buildPointerSvg(c));
 
   let styleEl = document.getElementById('f1-cursor-style');
@@ -36,21 +35,26 @@ function injectCursorStyles(color) {
     document.head.appendChild(styleEl);
   }
 
+  /* ============================================================ */
+  /* ✅ FIX CRITIQUE : PAS de cursor custom sur html/body         */
+  /* Chromium bloque la molette si html/body a cursor: url(...)   */
+  /* On applique le curseur custom UNIQUEMENT sur les éléments    */
+  /* interactifs.                                                 */
+  /* ============================================================ */
   styleEl.textContent = `
-    html, body {
-      cursor: ${arrowUrl} 5 2, auto !important;
-    }
     a, button, [role="button"], [role="link"], [role="tab"],
     [role="menuitem"], [role="option"], summary, label[for],
     select, input[type="checkbox"], input[type="radio"],
     input[type="submit"], input[type="button"], input[type="file"] {
       cursor: ${pointerUrl} 5 2, pointer !important;
     }
+
     input[type="text"], input[type="email"], input[type="password"],
     input[type="number"], input[type="search"], input[type="tel"],
     input[type="url"], input[type="date"], input[type="time"], textarea {
       cursor: text !important;
     }
+
     button:disabled, input:disabled, select:disabled,
     textarea:disabled, [disabled] {
       cursor: not-allowed !important;
