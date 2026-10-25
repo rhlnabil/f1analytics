@@ -3,7 +3,6 @@ package com.f1.f1analytics.service;
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.LoadState;
 import com.microsoft.playwright.options.WaitUntilState;
-import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -18,16 +17,12 @@ import java.util.Map;
 /**
  * Scraper F1 officiel (formula1.com/drivers/{slug}).
  *
- * ✅ INIT NON-BLOQUANTE : Playwright est initialisé après le boot de Spring
- *    (via ApplicationReadyEvent). Si Chromium échoue, l'app démarre quand même
- *    et le service renvoie une erreur claire au premier appel.
+ * ✅ INIT NON-BLOQUANTE : Playwright est initialisé UNIQUEMENT après le boot
+ *    de Spring (via ApplicationReadyEvent, dans un thread daemon).
+ *    Spring Boot ouvre donc son port immédiatement → healthcheck OK.
  *
- * ✅ RETRY : 2 tentatives avec backoff si la page n'est pas stable.
- *
- * ✅ EXTRACTION ROBUSTE : regex multi-patterns + fallback DOM si le texte brut
- *    ne contient pas "Career Stats".
- *
- * ✅ NETTOYAGE : chaque Page est fermée explicitement, chaque Context aussi.
+ * ✅ Le @PostConstruct a été SUPPRIMÉ : il bloquait le démarrage de Tomcat
+ *    car Chromium met plusieurs dizaines de secondes à démarrer.
  */
 @Service
 @Slf4j
@@ -49,37 +44,52 @@ public class F1SiteScraperService {
     private Playwright playwright;
     private Browser browser;
 
+    /* ✅ Verrou pour éviter des init concurrentes */
+    private final Object initLock = new Object();
+    private volatile boolean initStarted = false;
+
     // ============================================================
     // INIT DIFFÉRÉE (ne bloque PAS le boot Spring)
     // ============================================================
 
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationReady() {
-        // Démarre Playwright en arrière-plan pour ne pas bloquer
         Thread t = new Thread(this::init, "playwright-init");
         t.setDaemon(true);
         t.start();
     }
 
-   @PostConstruct
-public void init() {
-    try {
-        System.out.println("=== PLAYWRIGHT: début ===");
+    /**
+     * ✅ Initialisation thread-safe : si déjà lancée, on ne relance pas.
+     *    Plus de @PostConstruct → Spring Boot démarre instantanément.
+     */
+    public void init() {
+        synchronized (initLock) {
+            if (initStarted) {
+                return;
+            }
+            initStarted = true;
 
-        playwright = Playwright.create();
-        System.out.println("=== PLAYWRIGHT: créé ===");
+            try {
+                System.out.println("=== PLAYWRIGHT: début ===");
 
-        browser = playwright.chromium().launch(
-            new BrowserType.LaunchOptions()
-                .setHeadless(true)
-        );
-        System.out.println("=== CHROMIUM: lancé ===");
+                playwright = Playwright.create();
+                System.out.println("=== PLAYWRIGHT: créé ===");
 
-    } catch (Exception e) {
-        System.err.println("=== ERREUR PLAYWRIGHT ===");
-        e.printStackTrace();
+                browser = playwright.chromium().launch(
+                        new BrowserType.LaunchOptions()
+                                .setHeadless(true)
+                );
+                System.out.println("=== CHROMIUM: lancé ===");
+
+            } catch (Exception e) {
+                System.err.println("=== ERREUR PLAYWRIGHT ===");
+                e.printStackTrace();
+                // On autorise une nouvelle tentative plus tard
+                initStarted = false;
+            }
+        }
     }
-}
 
     @PreDestroy
     public void shutdown() {
@@ -115,7 +125,7 @@ public void init() {
             return stats;
         }
 
-        // Lazy-init si jamais le boot n'a pas déclenché l'event (tests, CLI…)
+        // Lazy-init si le boot n'a pas encore déclenché l'event
         if (browser == null) {
             init();
         }
@@ -193,7 +203,7 @@ public void init() {
                             .setTimeout(45000)
             );
 
-            // ✅ Détection 404
+            // Détection 404
             if (response != null && response.status() >= 400) {
                 return error("HTTP " + response.status() + " pour " + url);
             }
@@ -205,10 +215,9 @@ public void init() {
                 log.debug("NETWORKIDLE non atteint, on continue");
             }
 
-            // Attente initiale
             page.waitForTimeout(INITIAL_WAIT_MS);
 
-            // ✅ Attente explicite du bloc "Career Stats" (au lieu de 4s fixes)
+            // Attente explicite du bloc "Career Stats"
             try {
                 page.waitForSelector("text=/Career\\s*Stats/i",
                         new Page.WaitForSelectorOptions().setTimeout(10000));
@@ -218,7 +227,7 @@ public void init() {
                 return error("Section 'Career Stats' absente (page pas chargée ou 404)");
             }
 
-            // Stabilisation : on lit jusqu'à ce que 2 lectures consécutives soient identiques
+            // Stabilisation : lecture jusqu'à 2 résultats consécutifs identiques
             Map<String, String> prev = extractCareerValues(page);
             Map<String, String> curr = prev;
             boolean stabilized = false;
@@ -243,7 +252,6 @@ public void init() {
                 return error("Aucune donnée extraite de la page");
             }
 
-            // Mapping final
             stats.put("gpEntered",          toInt(curr.get("gpEntered")));
             stats.put("careerPoints",       toDecimal(curr.get("careerPoints")));
             stats.put("highestFinish",      curr.get("highestFinish"));
@@ -281,11 +289,6 @@ public void init() {
     // EXTRACTION DES 8 VALEURS
     // ============================================================
 
-    /**
-     * ✅ Extraction robuste : 2 stratégies en JS côté page :
-     *   1. Split sur les labels connus dans le texte brut
-     *   2. Fallback : chercher les éléments DOM contenant les labels
-     */
     private Map<String, String> extractCareerValues(Page page) {
         try {
             Object raw = page.evaluate(
@@ -297,7 +300,6 @@ public void init() {
                     " const section = text.substring(" +
                     "     idx, Math.min(idx + 3000, text.length));" +
 
-                    // ✅ Regex plus permissive : accepte "1 (x254)", "1 (x 254)", "1(254)"
                     " const RE = /^[^0-9]*([0-9]+(?:[.,][0-9]+)?(?:\\s*\\(\\s*x?\\s*[0-9]+\\s*\\))?)/;" +
 
                     " const tryExtract = (labels) => {" +
@@ -353,8 +355,6 @@ public void init() {
     private Integer toInt(String s) {
         if (s == null) return null;
         try {
-            // Supprime tout sauf les chiffres (ex: "1 (x254)" → "1254" ❌ MAUVAIS)
-            // → on garde uniquement le PREMIER nombre
             String cleaned = s.replaceAll("^[^0-9]*([0-9]+).*$", "$1");
             return cleaned.isEmpty() ? null : Integer.parseInt(cleaned);
         } catch (Exception e) {
