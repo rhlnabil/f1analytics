@@ -13,9 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Scraper F1 officiel (formula1.com/drivers/{slug}).
@@ -47,9 +45,6 @@ public class F1SiteScraperService {
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
             + "AppleWebKit/537.36 (KHTML, like Gecko) "
             + "Chrome/120.0.0.0 Safari/537.36";
-
-    /** Anti-doublon pour l'init différée */
-    private final AtomicBoolean initStarted = new AtomicBoolean(false);
 
     private Playwright playwright;
     private Browser browser;
