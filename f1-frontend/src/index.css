@@ -17,17 +17,20 @@
   --font-body: 'Rajdhani', sans-serif;
 }
 
-/* ✅ FIX CRITIQUE : empêche tout débordement horizontal */
+/* ✅ FIX #1 — Over-scroll noir (iOS/Android rebond blanc) */
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
   width: 100%;
   max-width: 100vw;
+  background-color: #0a0a0a !important;
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   font-family: var(--font-body);
-  background: var(--f1-black);
+  background: #0a0a0a !important;
   color: var(--f1-white);
   min-height: 100vh;
   font-size: 16px;
@@ -36,10 +39,19 @@ body {
   width: 100%;
   max-width: 100vw;
   position: relative;
+  overscroll-behavior-y: none;
   background-image:
     radial-gradient(ellipse at top, rgba(225,6,0,0.08) 0%, transparent 60%),
     radial-gradient(ellipse at bottom, rgba(30,65,255,0.05) 0%, transparent 60%);
   background-attachment: fixed;
+}
+
+/* ✅ FIX #2 — Safe area iPhone (encoche) */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: env(safe-area-inset-left, 0);
+    padding-right: env(safe-area-inset-right, 0);
+  }
 }
 
 body::before {
@@ -58,6 +70,8 @@ body::before {
   overflow-x: hidden;
   width: 100%;
   max-width: 100vw;
+  background-color: #0a0a0a;
+  min-height: 100vh;
 }
 
 /* ============ TYPOGRAPHY ============ */
@@ -145,6 +159,8 @@ input, select, textarea {
   max-width: 100%;
   transition: all 0.2s;
   outline: none;
+  -webkit-appearance: none;
+  appearance: none;
 }
 input::placeholder { color: #555; }
 input:focus, select:focus, textarea:focus {
@@ -376,9 +392,18 @@ html[dir="rtl"] select {
   position: relative;
 }
 
-#root {
-  position: relative;
-  isolation: isolate;
+/* ✅ FIX #3 — Tuer tout fond blanc dans les canvas WebGL */
+canvas {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* ✅ FIX #4 — Cacher Aurora sur mobile (cause de blanc) */
+@media (max-width: 900px) {
+  .aurora-container,
+  div[aria-hidden="true"]:has(.aurora-container) {
+    display: none !important;
+  }
 }
 
 /* ============================================================ */
@@ -399,18 +424,8 @@ img, video, iframe, svg {
   height: auto;
 }
 
-/* ✅ Fix Aurora sur mobile (crée du blanc) */
-@media (max-width: 900px) {
-  .aurora-container,
-  div[aria-hidden="true"]:has(.aurora-container) {
-    display: none !important;
-  }
-}
-
 /* ============================================================ */
-/* ============================================================ */
-/* ✅ RESPONSIVE — TABLETTE (≤ 1024px) ======================= */
-/* ============================================================ */
+/* ============ RESPONSIVE — TABLETTE (≤ 1024px) ============= */
 /* ============================================================ */
 @media (max-width: 1024px) {
   .container { padding: 0 20px; }
@@ -419,14 +434,11 @@ img, video, iframe, svg {
 }
 
 /* ============================================================ */
-/* ============================================================ */
-/* ✅ RESPONSIVE — MOBILE (≤ 900px) ========================== */
-/* ============================================================ */
+/* ============ RESPONSIVE — MOBILE (≤ 900px) ================ */
 /* ============================================================ */
 @media (max-width: 900px) {
   .container { padding: 0 16px; }
 
-  /* ---- GRIDS ---- */
   .grid-2,
   .grid-3,
   .grid-4 {
@@ -434,12 +446,10 @@ img, video, iframe, svg {
     gap: 16px !important;
   }
 
-  /* ---- TYPO ---- */
   h1 { font-size: clamp(26px, 8vw, 42px) !important; }
   h2 { font-size: clamp(20px, 6vw, 32px) !important; }
   h3 { font-size: clamp(16px, 4vw, 22px) !important; }
 
-  /* ---- TABLES → SCROLL ---- */
   table {
     display: block !important;
     overflow-x: auto !important;
@@ -453,7 +463,6 @@ img, video, iframe, svg {
     font-size: 12px !important;
   }
 
-  /* ---- FORCER TOUTES LES GRILLES INLINE À 1 COLONNE ---- */
   [style*="grid-template-columns"],
   [style*="gridTemplateColumns"] {
     grid-template-columns: 1fr !important;
@@ -461,13 +470,11 @@ img, video, iframe, svg {
     gap: 12px !important;
   }
 
-  /* ---- FLEX WRAP ---- */
   [style*="display: flex"],
   [style*="display:flex"] {
     flex-wrap: wrap !important;
   }
 
-  /* ---- SECTIONS PADDING ---- */
   section[style*="padding: 80px"],
   section[style*="padding: 100px"],
   section[style*="padding: 120px"],
@@ -476,7 +483,6 @@ img, video, iframe, svg {
     padding: 32px 16px !important;
   }
 
-  /* ---- HEADERS INLINE TROP GRANDS ---- */
   [style*="font-size: 96px"],
   [style*="font-size: 110px"],
   [style*="fontSize: 96"],
@@ -491,7 +497,6 @@ img, video, iframe, svg {
     font-size: 32px !important;
   }
 
-  /* ---- PHOTOS TROP GRANDES ---- */
   img[style*="width: 420px"],
   img[style*="width: 240px"],
   img[style*="height: 540px"],
@@ -500,14 +505,12 @@ img, video, iframe, svg {
     height: auto !important;
   }
 
-  /* ---- HERO PLEIN ÉCRAN ---- */
   section[style*="min-height: 100vh"] {
     min-height: auto !important;
     padding-top: 90px !important;
     padding-bottom: 40px !important;
   }
 
-  /* ---- FIX WIDTHS FIXES ---- */
   [style*="width: 780"],
   [style*="width: 620"],
   [style*="width: 520"],
@@ -521,7 +524,6 @@ img, video, iframe, svg {
     width: 100% !important;
   }
 
-  /* ---- FIX CHATBOT FAB ---- */
   button[aria-label*="Box"],
   button[aria-label*="chat"],
   button[aria-label*="assistant"] {
@@ -531,21 +533,18 @@ img, video, iframe, svg {
     right: 16px !important;
   }
 
-  /* ---- FIX CHATBOT PANEL ---- */
   [role="dialog"] {
     max-width: calc(100vw - 24px) !important;
     max-height: calc(100vh - 100px) !important;
     right: 12px !important;
   }
 
-  /* ---- FIX VOLANT F1 ---- */
   [style*="maxWidth: 780"],
   [style*="max-width: 780"] {
     max-width: 100% !important;
     padding: 0 8px;
   }
 
-  /* ---- FIX DRIVER DETAIL HERO ---- */
   [style*="grid-template-columns: auto 1fr"] {
     grid-template-columns: 1fr !important;
     text-align: center;
@@ -554,9 +553,7 @@ img, video, iframe, svg {
 }
 
 /* ============================================================ */
-/* ============================================================ */
-/* ✅ RESPONSIVE — PETIT MOBILE (≤ 600px) ==================== */
-/* ============================================================ */
+/* ============ RESPONSIVE — PETIT MOBILE (≤ 600px) ========== */
 /* ============================================================ */
 @media (max-width: 600px) {
   .container { padding: 0 12px; }
@@ -579,22 +576,18 @@ img, video, iframe, svg {
     font-size: 11px !important;
   }
 
-  /* Cacher colonnes moins importantes */
   table th:nth-child(n+6),
   table td:nth-child(n+6) {
     display: none;
   }
 
-  /* Hide top bar right (météo + langue) sur mobile */
   .top-bar-right {
     display: none !important;
   }
 }
 
 /* ============================================================ */
-/* ============================================================ */
-/* ✅ RESPONSIVE — TRÈS PETIT (≤ 380px) ====================== */
-/* ============================================================ */
+/* ============ RESPONSIVE — TRÈS PETIT (≤ 380px) ============ */
 /* ============================================================ */
 @media (max-width: 380px) {
   .container { padding: 0 8px; }
@@ -608,4 +601,40 @@ img, video, iframe, svg {
   }
 
   .card { padding: 12px !important; }
+}
+
+/* ============================================================ */
+/* ============ ✅ FIX ULTIME — TUER TOUT LE BLANC =========== */
+/* ============================================================ */
+
+/* Force noir sur html, body, root */
+html, body, #root {
+  background-color: #0a0a0a !important;
+}
+
+/* Empêche le flash blanc au chargement */
+body {
+  background: #0a0a0a !important;
+}
+
+/* Tuer les pseudo-elements blancs */
+body::before,
+body::after {
+  background-color: transparent;
+}
+
+/* Sécurité : les div racine d'Aurora ne doivent pas être blancs */
+div[aria-hidden="true"] {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* iOS/Android : cacher la couleur blanche de sélection */
+* {
+  -webkit-tap-highlight-color: rgba(225, 6, 0, 0.2);
+}
+
+/* Over-scroll iOS Safari (le rebond blanc) */
+html {
+  -webkit-overflow-scrolling: touch;
 }
