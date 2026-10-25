@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import axios from 'axios';
+import { API_BASE } from '../api/axios';   // ✅ import centralisé
 
-const API_BASE = 'http://localhost:8080';
 
 export default function OAuthSuccess() {
   const [params] = useSearchParams();

@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Html5Qrcode } from 'html5-qrcode';
-import api from '../api/axios';
+import api, { API_BASE } from '../api/axios';   
 
-const API_BASE = 'http://localhost:8080';
+
 const QR_SCANNER_ID = 'f1-qr-scanner-region';
 
 /* ============================================================ */
