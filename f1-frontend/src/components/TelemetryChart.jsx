@@ -67,7 +67,7 @@ export default function TelemetryChart({ sessionKey, driverNumber, driverName, t
       </div>
 
       <div style={{ height: 240 }}>
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height={240}>
           <LineChart data={data} syncId="telemetry" margin={{ top: 5, right: 5, bottom: 5, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#ffffff11" />
             <XAxis dataKey="index" stroke="#ffffff33" tick={{ fontSize: 9 }} interval="preserveStartEnd" />
@@ -81,7 +81,7 @@ export default function TelemetryChart({ sessionKey, driverNumber, driverName, t
       </div>
 
       <div style={{ height: 140, marginTop: 12 }}>
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height={140}>
           <LineChart data={data} syncId="telemetry" margin={{ top: 5, right: 5, bottom: 5, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#ffffff11" />
             <XAxis dataKey="index" stroke="#ffffff33" tick={{ fontSize: 9 }} interval="preserveStartEnd" />
