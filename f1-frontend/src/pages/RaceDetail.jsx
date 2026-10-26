@@ -3,7 +3,6 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { imgSrc, flagSrc } from '../utils/images';
 import RaceHighlights from '../components/RaceHighlights';
-import TelemetryChart from '../components/TelemetryChart';
 import RacePodcast from '../components/RacePodcast';
 
 /* ============================================================ */
