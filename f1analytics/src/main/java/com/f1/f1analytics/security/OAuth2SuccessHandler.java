@@ -2,11 +2,13 @@ package com.f1.f1analytics.security;
 
 import com.f1.f1analytics.entity.User;
 import com.f1.f1analytics.repository.UserRepository;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,17 +28,48 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final Environment env;
 
     @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
+
+    // ============================================================
+    // ✅ DIAGNOSTIC — log au démarrage pour vérifier la valeur lue
+    // ============================================================
+    @PostConstruct
+    public void logConfig() {
+        log.info("========================================================");
+        log.info("[OAuth2] ✅ frontendUrl (from @Value)  = {}", frontendUrl);
+        log.info("[OAuth2] ✅ APP_FRONTEND_URL (from env) = {}", env.getProperty("APP_FRONTEND_URL"));
+        log.info("========================================================");
+    }
+
+    /**
+     * Retourne l'URL du frontend en privilégiant la variable
+     * d'environnement brute APP_FRONTEND_URL (plus fiable que @Value
+     * quand le mapping des propriétés est capricieux).
+     */
+    private String getFrontendUrl() {
+        String fromEnv = env.getProperty("APP_FRONTEND_URL");
+        if (fromEnv != null && !fromEnv.isBlank()) {
+            return fromEnv.replaceAll("/+$", ""); // retire les slashs finaux
+        }
+        if (frontendUrl != null && !frontendUrl.isBlank()) {
+            return frontendUrl.replaceAll("/+$", "");
+        }
+        return "http://localhost:5173";
+    }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException {
 
+        String baseUrl = getFrontendUrl();
+        log.info("[OAuth2] ▶ base frontend utilisée = {}", baseUrl);
+
         if (!(authentication instanceof OAuth2AuthenticationToken oauthToken)) {
-            response.sendRedirect(frontendUrl + "/login?error=oauth_failed");
+            response.sendRedirect(baseUrl + "/login?error=oauth_failed");
             return;
         }
 
@@ -47,7 +80,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         if (email == null) {
             log.error("[OAuth2] Pas d'email reçu de Google");
-            response.sendRedirect(frontendUrl + "/login?error=oauth_no_email");
+            response.sendRedirect(baseUrl + "/login?error=oauth_no_email");
             return;
         }
 
@@ -107,7 +140,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String jwt = jwtService.generateToken(userDetails);
 
         String target = UriComponentsBuilder
-                .fromUriString(frontendUrl + "/oauth-success")
+                .fromUriString(baseUrl + "/oauth-success")
                 .queryParam("token", jwt)
                 .queryParam("username", user.getUsername())
                 .queryParam("role", user.getRole())
@@ -115,8 +148,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 .encode()
                 .toUriString();
 
-        log.info("[OAuth2] ✅ Redirect → /oauth-success (user={}, role={})",
-                 user.getUsername(), user.getRole());
+        log.info("[OAuth2] ✅ Redirect → {}", target.split("\\?")[0]);
         response.sendRedirect(target);
     }
 
