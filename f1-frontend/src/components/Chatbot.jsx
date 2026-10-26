@@ -37,7 +37,21 @@ function renderInline(text) {
 
 function Markdown({ text }) {
   if (!text) return null;
-  const blocks = text.split(/(```[\s\S]*?```)/g);
+
+  // ✅ Nettoie les balises HTML brutes que le LLM peut envoyer
+  const cleaned = text
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>\s*<p>/gi, '\n\n')
+    .replace(/<\/?p>/gi, '\n')
+    .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
+    .replace(/<b>(.*?)<\/b>/gi, '**$1**')
+    .replace(/<em>(.*?)<\/em>/gi, '*$1*')
+    .replace(/<i>(.*?)<\/i>/gi, '*$1*')
+    .replace(/<code>(.*?)<\/code>/gi, '`$1`')
+    .replace(/<[^>]+>/g, '')   // supprime toute balise HTML restante
+    .replace(/\n{3,}/g, '\n\n'); // évite les lignes vides en cascade
+
+  const blocks = cleaned.split(/(```[\s\S]*?```)/g);
   return blocks.map((block, bi) => {
     if (block.startsWith('```')) {
       const code = block.replace(/^```[a-zA-Z]*\n?/, '').replace(/```$/, '');
@@ -654,7 +668,7 @@ export default function ChatBot() {
           </svg>
         </button>
 
-        {/* ✅ NOUVEAU — Bouton fermer */}
+        {/* Bouton fermer */}
         <button
           type="button"
           onClick={closePanel}
