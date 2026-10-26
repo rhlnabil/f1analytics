@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,11 +16,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;                    // ✅ JwtService (pas JwtTokenProvider)
+    private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
 
     @Override
@@ -27,42 +29,53 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        String path = request.getRequestURI();
-        if (path.startsWith("/api/auth/") ||
-            path.startsWith("/oauth2/") ||
-            path.startsWith("/login/oauth2/")) {
-            filterChain.doFilter(request, response);
-            return;
+        final String authHeader = request.getHeader("Authorization");
+        final String requestPath = request.getRequestURI();
+
+        // Log pour voir si le filtre est appelé sur /api/fan/me
+        if (requestPath.startsWith("/api/fan")) {
+            log.info("[JWT] ▶ Requête reçue sur {} | Authorization présent = {}",
+                    requestPath, authHeader != null);
         }
 
-        String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String jwt = authHeader.substring(7);
+        final String jwt = authHeader.substring(7);
+        final String username;
 
         try {
-            String username = jwtService.extractUsername(jwt);
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            username = jwtService.extractUsername(jwt);
+            log.info("[JWT] ✅ Username extrait : {}", username);
+        } catch (Exception e) {
+            log.warn("[JWT] ❌ Extraction username échouée : {}", e.getMessage());
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            try {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                if (jwtService.isValid(jwt, userDetails)) {   // ✅ isValid, pas isTokenValid
+                log.info("[JWT] 🔍 UserDetails chargé : {} | authorities={}",
+                        userDetails.getUsername(), userDetails.getAuthorities());
+
+                if (jwtService.validateToken(jwt, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities()
-                        );
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails, null, userDetails.getAuthorities());
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                    log.info("[JWT] ✅ Authentifié : {}", username);
+                } else {
+                    log.warn("[JWT] ❌ validateToken = false pour {}", username);
                 }
+            } catch (Exception e) {
+                log.error("[JWT] ❌ Erreur loadUserByUsername({}) : {}", username, e.getMessage());
             }
-        } catch (Exception e) {
-            log.debug("[JWT] token invalide : {}", e.getMessage());
         }
 
         filterChain.doFilter(request, response);
     }
-
-    private static final org.slf4j.Logger log =
-        org.slf4j.LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 }
