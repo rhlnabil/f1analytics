@@ -64,6 +64,7 @@ public class SecurityConfig {
                     "/api/races/**",
                     "/api/circuits/**",
                     "/api/results/**",
+                    "/api/telemetry/**",
                     "/api/standings/**",
                     "/api/quiz/**",
                     "/api/puzzle/images"
