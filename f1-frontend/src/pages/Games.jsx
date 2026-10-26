@@ -1,7 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import api from '../api/axios';
-import { imgSrc } from '../utils/images';
+import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useCursor } from '../context/CursorContext';
 
 const GAMES = [
@@ -16,19 +14,13 @@ const GAMES = [
 ];
 
 export default function Games() {
-  const navigate = useNavigate();
   const { setCursorColor, resetCursorColor } = useCursor();
-  const [images, setImages] = useState([]);
-  const [loading, setLoading] = useState(true);
-
   const themeColor = '#e10600';
 
   useEffect(() => {
     setCursorColor(themeColor);
     return () => resetCursorColor();
   }, [themeColor, setCursorColor, resetCursorColor]);
-
-
 
   const fallbackImages = [
     'linear-gradient(135deg, #7a0300, #e10600)',
@@ -46,16 +38,7 @@ export default function Games() {
     'circuit-guesser': 'linear-gradient(135deg, #00d4ff 0%, #003a55 100%)',
     wordle: 'linear-gradient(135deg, #ffd700 0%, #7a5500 100%)',
     memory: 'linear-gradient(135deg, #ff2e88 0%, #7a0035 100%)',
-   
   };
-
-  if (loading) {
-    return (
-      <div className="container" style={{ padding: 100, textAlign: 'center' }}>
-        <div className="mono" style={{ color: themeColor, letterSpacing: '0.3em' }}>CHARGEMENT...</div>
-      </div>
-    );
-  }
 
   const playableCount = GAMES.filter(g => g.playable).length;
 
@@ -87,7 +70,7 @@ export default function Games() {
               </h1>
 
               <p style={{ color: 'var(--text-mid)', fontSize: 15, fontFamily: 'var(--font-heading)', maxWidth: 560, lineHeight: 1.6 }}>
-                9 mini-jeux F1 pour tester tes connaissances, tes réflexes et ton intuition.
+                {playableCount} mini-jeux F1 pour tester tes connaissances, tes réflexes et ton intuition.
               </p>
 
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginTop: 20, padding: '8px 16px', background: 'rgba(0,0,0,0.6)', border: `1px solid ${themeColor}55`, borderRadius: 6, fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '0.2em', color: '#fff' }}>
@@ -109,7 +92,6 @@ export default function Games() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 24 }}>
           {GAMES.map((game, idx) => {
             const disabled = !game.playable;
-            const bgImage = images[idx] ? imgSrc(images[idx].url) : null;
             const bgFallback = fallbackImages[idx % fallbackImages.length];
             const decorativeBg = gameBackdrops[game.id] || bgFallback;
 
@@ -144,7 +126,7 @@ export default function Games() {
                   e.currentTarget.style.borderColor = `${themeColor}66`;
                 }}
               >
-                <div style={{ position: 'absolute', inset: 0, backgroundImage: useImageBg ? `url(${bgImage})` : decorativeBg, backgroundSize: 'cover', backgroundPosition: 'center', filter: disabled ? 'grayscale(0.7) brightness(0.5)' : 'brightness(0.7)', transition: 'all 0.5s', zIndex: 0 }} />
+                <div style={{ position: 'absolute', inset: 0, background: decorativeBg, backgroundSize: 'cover', backgroundPosition: 'center', filter: disabled ? 'grayscale(0.7) brightness(0.5)' : 'brightness(0.7)', transition: 'all 0.5s', zIndex: 0 }} />
                 <div style={{ position: 'absolute', inset: 0, background: disabled ? 'linear-gradient(180deg, rgba(5,7,10,0.4) 0%, rgba(5,7,10,0.95) 100%)' : `linear-gradient(180deg, rgba(5,7,10,0.2) 0%, rgba(5,7,10,0.75) 40%, rgba(5,7,10,0.98) 100%)`, zIndex: 1 }} />
                 <div style={{ position: 'absolute', inset: 0, backgroundImage: `linear-gradient(${themeColor}11 1px, transparent 1px), linear-gradient(90deg, ${themeColor}11 1px, transparent 1px)`, backgroundSize: '24px 24px', opacity: 0.4, zIndex: 1, pointerEvents: 'none' }} />
 
