@@ -3,7 +3,6 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { imgSrc, flagSrc } from '../utils/images';
 import RaceHighlights from '../components/RaceHighlights';
-import RacePodcast from '../components/RacePodcast';
 
 /* ============================================================ */
 /* ============ HOOKS ========================================= */
@@ -524,144 +523,6 @@ function ResultRow({ result, isFastestLap, index }) {
 }
 
 /* ============================================================ */
-/* ============ TELEMETRY PANEL =============================== */
-/* ============================================================ */
-
-function TelemetryPanel({ sessionKey, drivers }) {
-  const [driverA, setDriverA] = useState('');
-  const [driverB, setDriverB] = useState('');
-  const [preloaded, setPreloaded] = useState({});
-
-  const driverOptions = useMemo(() => {
-    return drivers
-      .filter(d => d.driverNumber)
-      .map(d => ({
-        number: parseInt(d.driverNumber, 10),
-        name: `${d.driverFirstName} ${d.driverLastName}`,
-        code: d.driverCode,
-        color: d.teamColor || '#e10600',
-      }))
-      .filter(d => !isNaN(d.number));
-  }, [drivers]);
-
-  useEffect(() => {
-    if (driverOptions.length >= 2 && !driverA) setDriverA(String(driverOptions[0].number));
-    if (driverOptions.length >= 2 && !driverB) setDriverB(String(driverOptions[1].number));
-  }, [driverOptions, driverA, driverB]);
-
-  useEffect(() => {
-    if (!sessionKey || driverOptions.length < 2) return;
-    const dA = driverOptions[0].number;
-    const dB = driverOptions[1].number;
-
-    Promise.all([
-      api.get('/telemetry', { params: { sessionKey, driverNumber: dA } }).catch(() => null),
-      api.get('/telemetry', { params: { sessionKey, driverNumber: dB } }).catch(() => null),
-    ]).then(([rA, rB]) => {
-      setPreloaded({
-        [dA]: rA?.data || [],
-        [dB]: rB?.data || [],
-      });
-    });
-  }, [sessionKey, driverOptions]);
-
-  const driverAObj = driverOptions.find(d => String(d.number) === driverA);
-  const driverBObj = driverOptions.find(d => String(d.number) === driverB);
-
-  if (driverOptions.length < 2) {
-    return (
-      <div style={{
-        padding: 40, textAlign: 'center', color: 'var(--text-dim)',
-        background: 'rgba(0,0,0,0.3)', borderRadius: 8,
-        fontFamily: 'var(--font-heading)', fontSize: 13,
-      }}>
-        Pas assez de pilotes pour comparer la télémétrie.
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div style={{
-        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20,
-      }}>
-        <div>
-          <label style={{
-            display: 'block', marginBottom: 6,
-            fontFamily: 'var(--font-display)', fontSize: 9,
-            letterSpacing: '0.2em', color: 'var(--text-dim)', fontWeight: 700,
-          }}>PILOTE 1</label>
-          <select
-            value={driverA}
-            onChange={e => setDriverA(e.target.value)}
-            style={{
-              width: '100%', padding: '10px 12px',
-              background: 'rgba(20,20,26,0.9)',
-              border: `1px solid ${driverAObj?.color || '#e10600'}66`,
-              borderRadius: 6, color: '#fff',
-              fontFamily: 'var(--font-heading)', fontSize: 14, outline: 'none',
-              cursor: 'pointer',
-            }}
-          >
-            {driverOptions.map(d => (
-              <option key={d.number} value={d.number}>
-                #{d.number} · {d.name} ({d.code})
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label style={{
-            display: 'block', marginBottom: 6,
-            fontFamily: 'var(--font-display)', fontSize: 9,
-            letterSpacing: '0.2em', color: 'var(--text-dim)', fontWeight: 700,
-          }}>PILOTE 2</label>
-          <select
-            value={driverB}
-            onChange={e => setDriverB(e.target.value)}
-            style={{
-              width: '100%', padding: '10px 12px',
-              background: 'rgba(20,20,26,0.9)',
-              border: `1px solid ${driverBObj?.color || '#e10600'}66`,
-              borderRadius: 6, color: '#fff',
-              fontFamily: 'var(--font-heading)', fontSize: 14, outline: 'none',
-              cursor: 'pointer',
-            }}
-          >
-            {driverOptions.map(d => (
-              <option key={d.number} value={d.number}>
-                #{d.number} · {d.name} ({d.code})
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-        {driverAObj && (
-          <TelemetryChart
-            key={`a-${sessionKey}-${driverAObj.number}`}
-            sessionKey={sessionKey}
-            driverNumber={driverAObj.number}
-            driverName={driverAObj.name}
-            teamColor={driverAObj.color}
-          />
-        )}
-        {driverBObj && (
-          <TelemetryChart
-            key={`b-${sessionKey}-${driverBObj.number}`}
-            sessionKey={sessionKey}
-            driverNumber={driverBObj.number}
-            driverName={driverBObj.name}
-            teamColor={driverBObj.color}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ============================================================ */
 /* ============ MAIN COMPONENT ================================ */
 /* ============================================================ */
 
@@ -673,9 +534,6 @@ export default function RaceDetail() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const [activeTab, setActiveTab] = useState('results');
-  const [sessionKey, setSessionKey] = useState(null);
 
   useEffect(() => {
     const load = async () => {
@@ -693,12 +551,6 @@ export default function RaceDetail() {
       }
     };
     load();
-  }, [id]);
-
-  useEffect(() => {
-    api.get(`/races/${id}/session-key`)
-      .then(r => setSessionKey(r.data?.sessionKey ?? null))
-      .catch(() => setSessionKey(null));
   }, [id]);
 
   const podium = useMemo(() => results.slice(0, 3), [results]);
@@ -1121,30 +973,10 @@ export default function RaceDetail() {
         </section>
       )}
 
-      {/* ✅ HIGHLIGHTS YOUTUBE (EN PREMIER) */}
+      {/* HIGHLIGHTS YOUTUBE */}
       {hasResults && (
-        <section className="container" style={{
-          padding: '40px 32px 0',
-          maxWidth: 1400,
-          minHeight: 400,
-        }}>
+        <section className="container" style={{ padding: '40px 32px 0', maxWidth: 1400, minHeight: 400 }}>
           <RaceHighlights raceId={race.id} raceName={race.name} teamColor="#e10600" />
-        </section>
-      )}
-
-      {/* ✅ PODCAST AUDIO (SOUS LA VIDÉO) */}
-      {hasResults && (
-        <section className="container" style={{
-          padding: '24px 32px 0',
-          maxWidth: 1400,
-          minHeight: 200,
-        }}>
-          <RacePodcast
-            raceId={race.id}
-            raceName={race.name}
-            results={results}
-            teamColor="#e10600"
-          />
         </section>
       )}
 
@@ -1272,7 +1104,7 @@ export default function RaceDetail() {
         </section>
       )}
 
-      {/* ONGLETS : CLASSIFICATION / TÉLÉMÉTRIE */}
+      {/* CLASSIFICATION */}
       {hasResults && (
         <section className="container" style={{ padding: '50px 0 100px', maxWidth: 1400 }}>
           <div style={{
@@ -1281,122 +1113,73 @@ export default function RaceDetail() {
             marginBottom: 24,
             borderBottom: '1px solid rgba(255,255,255,0.08)',
           }}>
-            <button
-              onClick={() => setActiveTab('results')}
-              style={{
-                all: 'unset',
-                cursor: 'pointer',
-                padding: '12px 20px',
-                position: 'relative',
-                fontFamily: 'var(--font-display)',
-                fontSize: 11,
-                letterSpacing: '0.25em',
-                fontWeight: 900,
-                color: activeTab === 'results' ? '#fff' : 'var(--text-dim)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 10,
-              }}
-            >
+            <div style={{
+              padding: '12px 20px',
+              position: 'relative',
+              fontFamily: 'var(--font-display)',
+              fontSize: 11,
+              letterSpacing: '0.25em',
+              fontWeight: 900,
+              color: '#fff',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 10,
+            }}>
               <span style={{
                 width: 6, height: 6,
-                background: activeTab === 'results' ? '#e10600' : 'rgba(255,255,255,0.2)',
+                background: '#e10600',
                 transform: 'rotate(45deg)',
-                boxShadow: activeTab === 'results' ? '0 0 10px #e10600' : 'none',
+                boxShadow: '0 0 10px #e10600',
               }} />
               ◆ CLASSIFICATION
-              <span style={{
-                fontSize: 9,
-                color: activeTab === 'results' ? '#e10600' : 'rgba(255,255,255,0.3)',
-              }}>({results.length})</span>
-              {activeTab === 'results' && (
-                <div style={{
-                  position: 'absolute',
-                  bottom: -1, left: 0, right: 0,
-                  height: 2,
-                  background: '#e10600',
-                  boxShadow: '0 0 10px #e10600',
-                }} />
-              )}
-            </button>
-
-            {sessionKey && (
-              <button
-                onClick={() => setActiveTab('telemetry')}
-                style={{
-                  all: 'unset',
-                  cursor: 'pointer',
-                  padding: '12px 20px',
-                  position: 'relative',
-                  fontFamily: 'var(--font-display)',
-                  fontSize: 11,
-                  letterSpacing: '0.25em',
-                  fontWeight: 900,
-                  color: activeTab === 'telemetry' ? '#fff' : 'var(--text-dim)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 10,
-                }}
-              >
-                <span style={{
-                  width: 6, height: 6,
-                  background: activeTab === 'telemetry' ? '#00d4ff' : 'rgba(255,255,255,0.2)',
-                  transform: 'rotate(45deg)',
-                  boxShadow: activeTab === 'telemetry' ? '0 0 10px #00d4ff' : 'none',
-                }} />
-                📊 TÉLÉMÉTRIE
-                {activeTab === 'telemetry' && (
-                  <div style={{
-                    position: 'absolute',
-                    bottom: -1, left: 0, right: 0,
-                    height: 2,
-                    background: '#00d4ff',
-                    boxShadow: '0 0 10px #00d4ff',
-                  }} />
-                )}
-              </button>
-            )}
+              <span style={{ fontSize: 9, color: '#e10600' }}>
+                ({results.length})
+              </span>
+              <div style={{
+                position: 'absolute',
+                bottom: -1, left: 0, right: 0,
+                height: 2,
+                background: '#e10600',
+                boxShadow: '0 0 10px #e10600',
+              }} />
+            </div>
           </div>
 
-          {activeTab === 'results' ? (
+          <div style={{
+            background: 'linear-gradient(180deg, rgba(13,13,20,0.98) 0%, rgba(5,7,10,0.98) 100%)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 8,
+            overflow: 'hidden',
+          }}>
             <div style={{
-              background: 'linear-gradient(180deg, rgba(13,13,20,0.98) 0%, rgba(5,7,10,0.98) 100%)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: 8,
-              overflow: 'hidden',
+              display: 'grid',
+              gridTemplateColumns: '44px 26px 32px 1fr 130px 80px 90px 110px',
+              alignItems: 'center',
+              gap: 12,
+              padding: '12px 20px 12px 0',
+              background: 'linear-gradient(90deg, rgba(225,6,0,0.12) 0%, rgba(5,7,10,0.98) 60%)',
+              borderBottom: '1px solid rgba(225,6,0,0.3)',
+              fontFamily: 'var(--font-display)',
+              fontSize: 8,
+              letterSpacing: '0.25em',
+              color: 'rgba(255,255,255,0.5)',
+              fontWeight: 700,
+              textTransform: 'uppercase',
             }}>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '44px 26px 32px 1fr 130px 80px 90px 110px',
-                alignItems: 'center',
-                gap: 12,
-                padding: '12px 20px 12px 0',
-                background: 'linear-gradient(90deg, rgba(225,6,0,0.12) 0%, rgba(5,7,10,0.98) 60%)',
-                borderBottom: '1px solid rgba(225,6,0,0.3)',
-                fontFamily: 'var(--font-display)',
-                fontSize: 8,
-                letterSpacing: '0.25em',
-                color: 'rgba(255,255,255,0.5)',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-              }}>
-                <div style={{ textAlign: 'center' }}>POS</div>
-                <div></div>
-                <div style={{ textAlign: 'center' }}>CODE</div>
-                <div style={{ paddingLeft: 4 }}>DRIVER</div>
-                <div style={{ textAlign: 'center' }}>FORM</div>
-                <div style={{ textAlign: 'center' }}>FL</div>
-                <div style={{ textAlign: 'right' }}>LAPS</div>
-                <div style={{ textAlign: 'right' }}>POINTS</div>
-              </div>
-
-              {[...podium, ...rest].map((r, i) => (
-                <ResultRow key={r.driverId} result={r} isFastestLap={r.isFastestLap} index={i} />
-              ))}
+              <div style={{ textAlign: 'center' }}>POS</div>
+              <div></div>
+              <div style={{ textAlign: 'center' }}>CODE</div>
+              <div style={{ paddingLeft: 4 }}>DRIVER</div>
+              <div style={{ textAlign: 'center' }}>FORM</div>
+              <div style={{ textAlign: 'center' }}>FL</div>
+              <div style={{ textAlign: 'right' }}>LAPS</div>
+              <div style={{ textAlign: 'right' }}>POINTS</div>
             </div>
-          ) : (
-            <TelemetryPanel sessionKey={sessionKey} drivers={results} />
-          )}
+
+            {[...podium, ...rest].map((r, i) => (
+              <ResultRow key={r.driverId} result={r} isFastestLap={r.isFastestLap} index={i} />
+            ))}
+          </div>
         </section>
       )}
 
