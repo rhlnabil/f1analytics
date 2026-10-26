@@ -13,7 +13,7 @@ const VOICE_CONFIGS = {
       transcript: 'Lire le transcript',
       unavailable: 'Podcast indisponible pour ce Grand Prix.',
       loading: 'GÉNÉRATION DU PODCAST...',
-      noVoice: 'Aucune voix française détectée sur ce navigateur.',
+      noVoice: 'Aucune voix française détectée — la voix par défaut du navigateur sera utilisée.',
     },
   },
   en: {
@@ -26,7 +26,7 @@ const VOICE_CONFIGS = {
       transcript: 'Show transcript',
       unavailable: 'Podcast unavailable for this Grand Prix.',
       loading: 'GENERATING PODCAST...',
-      noVoice: 'No English voice detected on this browser.',
+      noVoice: 'No English voice detected — the browser default voice will be used.',
     },
   },
   es: {
@@ -39,7 +39,7 @@ const VOICE_CONFIGS = {
       transcript: 'Ver transcripción',
       unavailable: 'Podcast no disponible para este Gran Premio.',
       loading: 'GENERANDO PODCAST...',
-      noVoice: 'No se ha detectado ninguna voz en español en este navegador.',
+      noVoice: 'No se ha detectado ninguna voz en español — se usará la voz por defecto del navegador.',
     },
   },
   it: {
@@ -52,7 +52,7 @@ const VOICE_CONFIGS = {
       transcript: 'Leggi la trascrizione',
       unavailable: 'Podcast non disponibile per questo Gran Premio.',
       loading: 'GENERAZIONE PODCAST...',
-      noVoice: 'Nessuna voce italiana rilevata su questo browser.',
+      noVoice: 'Nessuna voce italiana rilevata — verrà usata la voce predefinita del browser.',
     },
   },
   ar: {
@@ -65,50 +65,105 @@ const VOICE_CONFIGS = {
       transcript: 'اقرأ النص',
       unavailable: 'البودكاست غير متاح لهذه الجائزة الكبرى.',
       loading: 'جارٍ إنشاء البودكاست...',
-      noVoice: 'لم يتم الكشف عن أي صوت عربي على هذا المتصفح.',
+      noVoice: 'لم يتم الكشف عن أي صوت عربي — سيتم استخدام الصوت الافتراضي للمتصفح.',
     },
   },
 };
 
 const FALLBACK_LANG = 'fr';
 
-function pickVoice(lang) {
-  if (!window.speechSynthesis) return null;
-  const voices = window.speechSynthesis.getVoices();
-  if (!voices || voices.length === 0) return null;
+/* ============================================================ */
+/* ✅ CHARGEMENT FIABLE DES VOIX (getVoices est async)          */
+/* ============================================================ */
+function getVoicesAsync() {
+  return new Promise((resolve) => {
+    if (!('speechSynthesis' in window)) return resolve([]);
 
+    const existing = window.speechSynthesis.getVoices();
+    if (existing && existing.length > 0) return resolve(existing);
+
+    // Les voix ne sont pas encore chargées → on attend voiceschanged
+    let resolved = false;
+    const handler = () => {
+      if (resolved) return;
+      resolved = true;
+      window.speechSynthesis.removeEventListener('voiceschanged', handler);
+      resolve(window.speechSynthesis.getVoices());
+    };
+    window.speechSynthesis.addEventListener('voiceschanged', handler);
+
+    // Filet de sécurité : si l'événement ne se déclenche pas
+    // (bug Safari/iOS), on re-vérifie après un court délai
+    setTimeout(() => {
+      if (resolved) return;
+      const v = window.speechSynthesis.getVoices();
+      if (v && v.length > 0) {
+        resolved = true;
+        window.speechSynthesis.removeEventListener('voiceschanged', handler);
+        resolve(v);
+      }
+    }, 800);
+
+    // Dernier recours : après 2s, on résout avec ce qu'on a
+    setTimeout(() => {
+      if (resolved) return;
+      resolved = true;
+      window.speechSynthesis.removeEventListener('voiceschanged', handler);
+      resolve(window.speechSynthesis.getVoices() || []);
+    }, 2000);
+  });
+}
+
+/* ============================================================ */
+/* ✅ SÉLECTION DE VOIX — retourne null mais ne bloque jamais    */
+/* ============================================================ */
+function pickVoice(voices, lang) {
   const config = VOICE_CONFIGS[lang] || VOICE_CONFIGS[FALLBACK_LANG];
-  const prefix = config.locale.split('-')[0];
+  const prefix = config.locale.split('-')[0]; // ex: 'ar', 'en', 'es'
 
-  const langVoices = voices.filter(v => v.lang.toLowerCase().startsWith(prefix));
-  if (langVoices.length === 0) return null;
+  // Filtre robuste : on teste le préfixe de langue
+  const langVoices = (voices || []).filter((v) => {
+    if (!v || !v.lang) return false;
+    return v.lang.toLowerCase().startsWith(prefix);
+  });
 
+  if (langVoices.length === 0) {
+    console.warn(`[Podcast][${lang}] Aucune voix ${prefix} dans getVoices(). Total disponible: ${voices?.length || 0}`);
+    return null;
+  }
+
+  // 1. Essaye les voix mâles connues
   for (const name of config.male) {
-    const match = langVoices.find(v => v.name.toLowerCase().includes(name));
+    const match = langVoices.find((v) => v.name.toLowerCase().includes(name));
     if (match) {
-      console.log(`[Podcast][${lang}] Male voice:`, match.name);
+      console.log(`[Podcast][${lang}] ✅ Male voice:`, match.name, '|', match.lang);
       return match;
     }
   }
 
-  const nonFemale = langVoices.find(v => {
+  // 2. Fallback : première voix non-femelle
+  const nonFemale = langVoices.find((v) => {
     const n = v.name.toLowerCase();
-    return !config.female.some(f => n.includes(f));
+    return !config.female.some((f) => n.includes(f));
   });
   if (nonFemale) {
-    console.log(`[Podcast][${lang}] Non-female voice:`, nonFemale.name);
+    console.log(`[Podcast][${lang}] ✅ Non-female voice:`, nonFemale.name, '|', nonFemale.lang);
     return nonFemale;
   }
 
-  console.warn(`[Podcast][${lang}] Fallback voice:`, langVoices[0].name);
+  // 3. Dernier recours : la première voix de la langue
+  console.log(`[Podcast][${lang}] ✅ Fallback voice:`, langVoices[0].name, '|', langVoices[0].lang);
   return langVoices[0];
 }
 
+/* ============================================================ */
+/* ============ SCRIPT FALLBACK LOCAL ========================= */
+/* ============================================================ */
 function generateFallbackScript(lang, raceName, results) {
   if (!results || results.length < 3) return '';
   const p1 = results[0], p2 = results[1], p3 = results[2];
-  const fastest = results.find(r => r.isFastestLap);
-  const name = d => `${d.driverFirstName || ''} ${d.driverLastName || ''}`.trim();
+  const fastest = results.find((r) => r.isFastestLap);
+  const name = (d) => `${d.driverFirstName || ''} ${d.driverLastName || ''}`.trim();
 
   switch (lang) {
     case 'en':
@@ -144,6 +199,9 @@ function generateFallbackScript(lang, raceName, results) {
   }
 }
 
+/* ============================================================ */
+/* ==================== COMPOSANT PRINCIPAL =================== */
+/* ============================================================ */
 export default function RacePodcast({ raceId, raceName, results = [], teamColor = '#e10600' }) {
   const { i18n } = useTranslation();
   const currentLang = (i18n.language || FALLBACK_LANG).split('-')[0];
@@ -159,48 +217,58 @@ export default function RacePodcast({ raceId, raceName, results = [], teamColor 
   const [duration, setDuration] = useState(0);
   const [voicesReady, setVoicesReady] = useState(false);
   const [selectedVoiceName, setSelectedVoiceName] = useState('');
-  const [voiceError, setVoiceError] = useState('');
+  const [voiceWarning, setVoiceWarning] = useState('');
   const [volume, setVolume] = useState(1.0);
 
+  /* ============================================================ */
+  /* ✅ CHARGEMENT DES VOIX (async fiable)                        */
+  /* ============================================================ */
   useEffect(() => {
-    if (!('speechSynthesis' in window)) return;
+    if (!('speechSynthesis' in window)) {
+      setVoicesReady(true);
+      setVoiceWarning('La synthèse vocale n\'est pas supportée par ce navigateur.');
+      return;
+    }
 
-    const loadVoices = () => {
-      const v = window.speechSynthesis.getVoices();
-      if (v.length > 0) {
-        setVoicesReady(true);
-        const best = pickVoice(currentLang);
-        if (best) {
-          setSelectedVoiceName(best.name);
-          setVoiceError('');
-        } else {
-          setSelectedVoiceName('');
-          setVoiceError(L.noVoice);
-        }
+    let cancelled = false;
+
+    getVoicesAsync().then((voices) => {
+      if (cancelled) return;
+      setVoicesReady(true);
+
+      const best = pickVoice(voices, currentLang);
+      if (best) {
+        setSelectedVoiceName(best.name);
+        setVoiceWarning('');
+      } else {
+        setSelectedVoiceName('');
+        // ✅ Avertissement NON bloquant — le podcast reste utilisable
+        setVoiceWarning(L.noVoice);
+        console.warn(`[Podcast] Aucune voix "${currentLang}" détectée. Voix par défaut du navigateur utilisée.`);
       }
-    };
-
-    loadVoices();
-    window.speechSynthesis.onvoiceschanged = loadVoices;
+    });
 
     return () => {
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.onvoiceschanged = null;
+      cancelled = true;
+      try { window.speechSynthesis.cancel(); } catch {}
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentLang]);
 
+  /* ============================================================ */
+  /* ✅ CHARGEMENT DU SCRIPT (backend ou fallback local)         */
+  /* ============================================================ */
   useEffect(() => {
     if (!raceId) return;
 
-    window.speechSynthesis.cancel();
+    try { window.speechSynthesis.cancel(); } catch {}
     setPlaying(false);
     setPaused(false);
     setProgress(0);
     setLoading(true);
 
     api.get(`/races/${raceId}/podcast`, { params: { lang: currentLang } })
-      .then(r => {
+      .then((r) => {
         const backendScript = r.data?.script || '';
         if (backendScript.length > 20) {
           setScript(backendScript);
@@ -214,26 +282,40 @@ export default function RacePodcast({ raceId, raceName, results = [], teamColor 
       .finally(() => setLoading(false));
   }, [raceId, raceName, results, currentLang]);
 
+  /* ============================================================ */
+  /* ✅ LECTURE — ne bloque plus sur absence de voix             */
+  /* ============================================================ */
   const play = () => {
-    if (!script || !voicesReady) return;
+    if (!script) return;
 
     if (paused) {
-      window.speechSynthesis.resume();
+      try { window.speechSynthesis.resume(); } catch {}
       setPaused(false);
       setPlaying(true);
       return;
     }
 
-    window.speechSynthesis.cancel();
+    try { window.speechSynthesis.cancel(); } catch {}
 
     const utterance = new SpeechSynthesisUtterance(script);
+
+    // ✅ TOUJOURS définir la langue cible
     utterance.lang = config.locale;
+
     utterance.rate = 0.92;
     utterance.pitch = 0.9;
     utterance.volume = volume;
 
-    const voice = pickVoice(currentLang);
-    if (voice) utterance.voice = voice;
+    // ✅ On tente d'assigner la meilleure voix
+    // Si aucune n'est trouvée, on N'ASSIGNE PAS `voice`
+    // → le navigateur utilise sa voix par défaut pour `utterance.lang`
+    const voices = window.speechSynthesis.getVoices() || [];
+    const voice = pickVoice(voices, currentLang);
+    if (voice) {
+      utterance.voice = voice;
+    } else {
+      console.warn(`[Podcast] Pas de voix "${currentLang}" — fallback voix par défaut du navigateur.`);
+    }
 
     const wordCount = script.split(/\s+/).length;
     setDuration(Math.round((wordCount / 150) * 60));
@@ -256,26 +338,33 @@ export default function RacePodcast({ raceId, raceName, results = [], teamColor 
       setPaused(false);
     };
 
-    window.speechSynthesis.speak(utterance);
-    setPlaying(true);
-    setPaused(false);
+    try {
+      window.speechSynthesis.speak(utterance);
+      setPlaying(true);
+      setPaused(false);
+    } catch (err) {
+      console.error('[Podcast] speak() a échoué :', err);
+    }
   };
 
   const pause = () => {
     if (playing) {
-      window.speechSynthesis.pause();
+      try { window.speechSynthesis.pause(); } catch {}
       setPaused(true);
       setPlaying(false);
     }
   };
 
   const stop = () => {
-    window.speechSynthesis.cancel();
+    try { window.speechSynthesis.cancel(); } catch {}
     setPlaying(false);
     setPaused(false);
     setProgress(0);
   };
 
+  /* ============================================================ */
+  /* ============ RENDER STATES ================================= */
+  /* ============================================================ */
   if (loading) {
     return (
       <div style={{
@@ -308,6 +397,11 @@ export default function RacePodcast({ raceId, raceName, results = [], teamColor 
   }
 
   const isRTL = currentLang === 'ar';
+
+  /* ✅ Le bouton n'est désactivé QUE si la synthèse vocale
+         n'est pas supportée du tout par le navigateur */
+  const speechSupported = 'speechSynthesis' in window;
+  const buttonDisabled = !speechSupported;
 
   return (
     <div style={{
@@ -363,21 +457,24 @@ export default function RacePodcast({ raceId, raceName, results = [], teamColor 
           </div>
         )}
 
-        {voiceError && (
+        {/* ✅ Avertissement NON bloquant */}
+        {voiceWarning && (
           <div style={{
             padding: '8px 12px',
             marginBottom: 16,
-            background: 'rgba(255,135,0,0.1)',
-            border: '1px solid rgba(255,135,0,0.3)',
+            background: 'rgba(255,135,0,0.08)',
+            border: '1px solid rgba(255,135,0,0.25)',
             borderRadius: 6,
             color: '#ff8700',
             fontFamily: 'var(--font-heading)',
             fontSize: 12,
+            lineHeight: 1.5,
           }}>
-            ⚠️ {voiceError}
+            ⚠️ {voiceWarning}
           </div>
         )}
 
+        {/* Player */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 16,
           padding: '16px 20px',
@@ -389,19 +486,19 @@ export default function RacePodcast({ raceId, raceName, results = [], teamColor 
         }}>
           <button
             onClick={playing ? pause : play}
-            disabled={!voicesReady || !!voiceError}
+            disabled={buttonDisabled}
             style={{
               width: 56, height: 56,
               borderRadius: '50%',
-              background: voicesReady && !voiceError
-                ? `radial-gradient(circle, ${teamColor} 0%, ${teamColor}aa 100%)`
-                : 'rgba(255,255,255,0.1)',
+              background: buttonDisabled
+                ? 'rgba(255,255,255,0.1)'
+                : `radial-gradient(circle, ${teamColor} 0%, ${teamColor}aa 100%)`,
               border: '2px solid rgba(255,255,255,0.3)',
               color: '#fff',
               fontSize: 22,
-              cursor: voicesReady && !voiceError ? 'pointer' : 'wait',
+              cursor: buttonDisabled ? 'not-allowed' : 'pointer',
               display: 'grid', placeItems: 'center',
-              boxShadow: voicesReady && !voiceError ? `0 0 25px ${teamColor}aa` : 'none',
+              boxShadow: buttonDisabled ? 'none' : `0 0 25px ${teamColor}aa`,
               flexShrink: 0,
             }}
           >
@@ -433,8 +530,8 @@ export default function RacePodcast({ raceId, raceName, results = [], teamColor 
               fontFamily: 'var(--font-display)', fontSize: 9,
               letterSpacing: '0.15em', color: 'var(--text-dim)',
             }}>
-              <span>{voicesReady ? `${Math.round((progress / 100) * duration)}s` : '...'}</span>
-              <span>{voicesReady ? `~${duration}s` : ''}</span>
+              <span>{`${Math.round((progress / 100) * duration)}s`}</span>
+              <span>{`~${duration}s`}</span>
             </div>
           </div>
 
@@ -450,6 +547,7 @@ export default function RacePodcast({ raceId, raceName, results = [], teamColor 
           )}
         </div>
 
+        {/* Volume */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 12,
           marginBottom: 16,
@@ -462,7 +560,7 @@ export default function RacePodcast({ raceId, raceName, results = [], teamColor 
           <input
             type="range" min="0" max="1" step="0.05"
             value={volume}
-            onChange={e => setVolume(parseFloat(e.target.value))}
+            onChange={(e) => setVolume(parseFloat(e.target.value))}
             style={{
               flex: 1, accentColor: teamColor, cursor: 'pointer', height: 4,
             }}
@@ -474,6 +572,7 @@ export default function RacePodcast({ raceId, raceName, results = [], teamColor 
           }}>{Math.round(volume * 100)}%</span>
         </div>
 
+        {/* Transcript */}
         <details style={{
           fontFamily: 'var(--font-heading)', fontSize: 13,
           color: 'var(--text-mid)', lineHeight: 1.7,
