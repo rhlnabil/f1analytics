@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { API_BASE } from '../api/axios';   // ✅ import centralisé
 
-
 export default function OAuthSuccess() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
@@ -95,18 +94,32 @@ export default function OAuthSuccess() {
       const decodedRole = safeDecode(rawRole);
 
       /* ============================================================ */
-      /* 4. Teste chaque variante via une requête directe (sans      */
-      /*    passer par l'intercepteur axios global → pas de clean    */
-      /*    localStorage intempestif)                                */
+      /* 4. Teste chaque variante via fetch (pas d'axios requis)      */
       /* ============================================================ */
       const log = [];
 
       for (const candidate of candidates) {
         try {
-          await axios.get(`${API_BASE}/api/fan/me`, {
+          const res = await fetch(`${API_BASE}/api/fan/me`, {
             headers: { Authorization: `Bearer ${candidate.value}` },
-            timeout: 8000,
           });
+
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            log.push({
+              strategy: candidate.name,
+              ok: false,
+              httpStatus: res.status,
+              message: data.message || data.error || res.statusText,
+            });
+            setStrategyLog([...log]);
+            console.warn(
+              `[OAuthSuccess] ❌ ${candidate.name} →`,
+              res.status,
+              data.message || data.error || res.statusText
+            );
+            continue;
+          }
 
           /* ✅ SUCCESS */
           log.push({ strategy: candidate.name, ok: true });
@@ -127,19 +140,14 @@ export default function OAuthSuccess() {
           }, 700);
           return;
         } catch (err) {
-          const httpStatus = err?.response?.status;
           log.push({
             strategy: candidate.name,
             ok: false,
-            httpStatus,
-            message: err?.response?.data?.message || err?.message,
+            httpStatus: undefined,
+            message: err?.message,
           });
           setStrategyLog([...log]);
-          console.warn(
-            `[OAuthSuccess] ❌ ${candidate.name} →`,
-            httpStatus,
-            err?.response?.data?.message || err?.message
-          );
+          console.warn(`[OAuthSuccess] ❌ ${candidate.name} →`, err?.message);
         }
       }
 
